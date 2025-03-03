@@ -63,35 +63,35 @@ extern "C" {
  * If enabled, will log every scheduler cycle number and tick
  */
 #ifndef USE_OS_TRACE_CYCLE
-#define USE_OS_TRACE_CYCLE                    1
+#define USE_OS_TRACE_CYCLE                    0
 #endif
 
 /**
  * If enabled, will log calls to os_task_kill
  */
 #ifndef USE_OS_TRACE_TASK_KILL
-#define USE_OS_TRACE_TASK_KILL                1
+#define USE_OS_TRACE_TASK_KILL                0
 #endif
 
 /**
  * If enabled, will log calls to os_yield
  */
 #ifndef USE_OS_TRACE_TASK_YIELD
-#define USE_OS_TRACE_TASK_YIELD               1
+#define USE_OS_TRACE_TASK_YIELD               0
 #endif
 
 /**
  * If enabled, will log task switching
  */
 #ifndef USE_OS_TRACE_TASK_SWITCH
-#define USE_OS_TRACE_TASK_SWITCH              1
+#define USE_OS_TRACE_TASK_SWITCH              0
 #endif
 
 /**
  * If enabled, will log every handled task for each cycle
  */
 #ifndef USE_OS_TRACE_TASK_HANDLE
-#define USE_OS_TRACE_TASK_HANDLE              1
+#define USE_OS_TRACE_TASK_HANDLE              0
 #endif
 
 /**

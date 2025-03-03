@@ -36,16 +36,12 @@
 /**
  * Delay for CYCLE_DELAY ms time on each cycle
  */
-#define USE_CYCLE_DELAY                   1
+#define USE_CYCLE_DELAY                   0
 
 /**
  * Time in ms to delay each cycle for
- * FIXME: Value is too big obviously, sleep_port for STM32F100 is wrong
  */
-#define CYCLE_DELAY                       10000
-
-// TODO: Remove
-#define USE_OS_TRACE_STACK                1
+#define CYCLE_DELAY                       200
 
 /**
  * __setjmp can be redefined, if needed to provide custom implementation
@@ -217,8 +213,6 @@ void os_launch(void) {
 
   // Prepares stack for scheduler
   os_prepare_scheduler_stack_port();
-
-  OS_LOG_TRACE(STACK, "msp=%p psp=%p", __get_MSP(), __get_PSP());
 
   // Set current task to head of task list
   os.task.current = os.task.head;
@@ -438,29 +432,10 @@ const char * os_task_state_to_str(os_task_state_t state) {
   }
 }
 
-// TODO: Move to os port
-void os_prepare_scheduler_stack_port(void) {
-  extern uint32_t _estack;
-
-  // Switch MSP & PSP
-  __set_PSP(__get_MSP());
-
-  // Use PSP as SP
-  __set_CONTROL(1 << CONTROL_SPSEL_Pos);
-
-  // MSP shouldn't be used by anything, but if it is used it will overwrite PSP
-  // This is expected, because if MSP ever got used, things have gone bad...
-  __set_MSP((uint32_t) &_estack);
-
-  // Flush pipeline
-  __ISB();
+__WEAK void os_prepare_scheduler_stack_port(void) {
+  os_abort("os_prepare_scheduler_stack_port has no implementation");
 }
 
-// TODO: Move to os port
 __WEAK void os_set_stack_port(void * stack) {
-  // Set PSP to new value
-  __set_PSP((uint32_t) stack);
-
-  // Flush pipeline
-  __ISB();
+  os_abort("os_set_stack_port has no implementation");
 }
