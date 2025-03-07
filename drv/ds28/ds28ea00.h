@@ -1,10 +1,12 @@
 /** ========================================================================= *
  *
- * @file ds28.h
+ * @file ds28ea00.h
  * @date 23-07-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief ds28ea00
+ * @brief DS28EA00 Driver
+ *
+ * TODO: Separate generic DS28 logic from chain-mode
  *
  *  ========================================================================= */
 #pragma once
@@ -14,16 +16,10 @@ extern "C" {
 #endif
 
 /* Includes ================================================================= */
-#include "hal/uart/uart.h"
 #include "hal/onewire/onewire.h"
 #include "error/error.h"
 
 /* Defines ================================================================== */
-/**
- * Max devices (size of devices buffer)
- */
-#define DS28EA00_MAX_DEVICES 4
-
 /**
  * Can be passed to functions (convert_temp, read_temp, etc)
  * to select all devices
@@ -31,17 +27,28 @@ extern "C" {
 #define DS28EA00_TARGET_ALL NULL
 
 /**
+ * Max devices (size of devices buffer)
+ */
+#ifndef DS28EA00_MAX_DEVICES
+#define DS28EA00_MAX_DEVICES 4
+#endif
+
+/**
  * Temperature precision value
  * 1000 = 10^3 = 3 digits after point
  */
+#ifndef DS28EA00_PRECISION
 #define DS28EA00_PRECISION 1000
+#endif
 
 /**
  * Temperature scaler value
  * Temperature read returns 2 bytes, which have to be scaled correctly
  * (divide by DS28EA00_SCALER)
  */
+#ifndef DS28EA00_SCALER
 #define DS28EA00_SCALER 16
+#endif
 
 /* Macros =================================================================== */
 /* Enums ==================================================================== */

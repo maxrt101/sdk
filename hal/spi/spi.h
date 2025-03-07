@@ -7,7 +7,7 @@
  * @brief Generic SPI HAL API, has no default implementation
  *
  * Board must implement init/deinit/select/unselect/send_recv,
- * using spi_t* as void* pointer for device specific SPI context/handle
+ * using spi_handle_t* as void* pointer for device specific SPI context/handle
  *
  *  ========================================================================= */
 #pragma once
