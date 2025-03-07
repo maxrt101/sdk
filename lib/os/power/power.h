@@ -63,7 +63,7 @@ error_t os_power_mode_block(os_power_mode_t mode, bool block);
  *
  * @param mode Power mode
  */
-error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t new_mode);
+error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t mode);
 
 /**
  * Converts power_mode_t enum value to string

@@ -38,27 +38,32 @@ error_t os_power_mode_change(os_power_mode_t mode) {
     return E_CANCELLED;
   }
 
-  os_power_mode_t prev = power_ctx.current_power_mode;
+  os_power_mode_t prev_mode = power_ctx.current_power_mode;
   power_ctx.current_power_mode = mode;
-  error_t err = os_power_mode_change_port(prev, mode);
-  return err;
+  return os_power_mode_change_port(prev_mode, mode);
 }
 
 error_t os_power_mode_skip_next(os_power_mode_t mode) {
+  ASSERT_RETURN(mode < OS_POWER_MODE_COUNT, E_INVAL);
+
   power_ctx.skip_table = UTIL_BIT_SET(power_ctx.skip_table, mode);
+
   return E_OK;
 }
 
 error_t os_power_mode_block(os_power_mode_t mode, bool block) {
+  ASSERT_RETURN(mode < OS_POWER_MODE_COUNT, E_INVAL);
+
   power_ctx.skip_table = block
       ? UTIL_BIT_SET(power_ctx.skip_table, mode)
       : UTIL_BIT_CLEAR(power_ctx.skip_table, mode);
+
   return E_OK;
 }
 
-__WEAK error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t new_mode) {
+__WEAK error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t mode) {
+  log_info("Transition %s -> %s requested", os_power_mode_to_str(prev_mode), os_power_mode_to_str(mode));
   log_warn("os_power_mode_change_port has no implementation");
-  log_info("transition %s to %s", os_power_mode_to_str(prev_mode), os_power_mode_to_str(new_mode));
   return E_NOTIMPL;
 }
 
