@@ -60,6 +60,29 @@ extern "C" {
 #endif
 
 /**
+ * Sleep after OS_SLEEP_AFTER_CYCLES cycles passed
+ */
+#ifndef USE_OS_SLEEP_AFTER_CYCLE
+#define USE_OS_SLEEP_AFTER_CYCLE              0
+#endif
+
+/**
+ * Cycles to trigger sleep after
+ * (enabled with USE_OS_SLEEP_AFTER_CYCLE)
+ */
+#ifndef OS_SLEEP_AFTER_CYCLES
+#define OS_SLEEP_AFTER_CYCLES                 0
+#endif
+
+/**
+ * Sleep mode to trigger after OS_SLEEP_AFTER_CYCLES
+ * (enabled with USE_OS_SLEEP_AFTER_CYCLE)
+ */
+#ifndef OS_SLEEP_MODE
+#define OS_SLEEP_MODE                         OS_POWER_MODE_FAST_SLEEP
+#endif
+
+/**
  * If enabled, will log every scheduler cycle number and tick
  */
 #ifndef USE_OS_TRACE_CYCLE

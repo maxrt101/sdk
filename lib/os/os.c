@@ -10,8 +10,8 @@
 #include "log/log.h"
 #include "error/assertion.h"
 #include "os/abort/abort.h"
+#include "os/power/power.h"
 #include "os.h"
-#include "mutex.h"
 
 #include <time.h>
 
@@ -228,6 +228,12 @@ void os_launch(void) {
     if (os.cycles == MAX_CYCLES) {
       register volatile uint32_t sp asm("sp");
       os_abort("debug max cycles reached (sp=%p msp=%p psp=%p)", sp, __get_MSP(), __get_PSP());
+    }
+#endif
+
+#if USE_OS_SLEEP_AFTER_CYCLE
+    if (os.cycles && os.cycles % OS_SLEEP_AFTER_CYCLES == 0) {
+      os_power_mode_change(OS_SLEEP_MODE);
     }
 #endif
 
