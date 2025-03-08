@@ -26,7 +26,7 @@ extern "C" {
 /**
  * Safe string copy (truncates source, if destination is smaller than source)
  */
-#define UTIL_STR_COPY(dst, src, max_size) \
+#define UTIL_STR_COPY(dst, src, max_size)                                       \
     memcpy(dst, src, UTIL_MIN(max_size, strlen(src)))
 
 /* Enums ==================================================================== */

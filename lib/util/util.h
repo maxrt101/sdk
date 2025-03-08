@@ -60,7 +60,7 @@ extern "C" {
 /**
  * Maps value of range [min1, max1] to range[min2, max2]
  */
-#define UTIL_MAP_RANGE(value, min1, max1, min2, max2) \
+#define UTIL_MAP_RANGE(value, min1, max1, min2, max2)                           \
   (((value) * ((max2) - (min2))) / ((max1) - (min1)))
 
 /**
@@ -76,14 +76,14 @@ extern "C" {
  * @param[out] result Variable to put the result in
  *
  */
-#define UTIL_MAP_RANGE_TABLE(_table, _value, _result)                                 \
-  do {                                                                                \
-    for (int i = 0; ((_table)[i].from && (_table)[i].to); ++i) {                      \
-      if ((_value) >= (_table)[i].from && (_value) <= (_table)[i].to) {               \
-         (_result) = (_table)[i].value;                                               \
-         break;                                                                       \
-      }                                                                               \
-    }                                                                                 \
+#define UTIL_MAP_RANGE_TABLE(_table, _value, _result)                           \
+  do {                                                                          \
+    for (int i = 0; ((_table)[i].from && (_table)[i].to); ++i) {                \
+      if ((_value) >= (_table)[i].from && (_value) <= (_table)[i].to) {         \
+         (_result) = (_table)[i].value;                                         \
+         break;                                                                 \
+      }                                                                         \
+    }                                                                           \
   } while (0)
 
 /**
@@ -100,7 +100,7 @@ extern "C" {
  * (let's say 0), UTIL_IF1_0 is empty, and doesn't contain a comma, so
  * second argument will be __VA_ARGS__, and it will get called
  */
-#define UTIL_IF_1_IMPL(condition, if_true, ...) \
+#define UTIL_IF_1_IMPL(condition, if_true, ...)                                 \
     UTIL_GET_ARG2_OBSTRUCT(UTIL_CAT_RAW(UTIL_IF1_, condition) if_true, __VA_ARGS__)
 
 /**
@@ -108,7 +108,7 @@ extern "C" {
  *
  * @note condition must be literally 1
  */
-#define UTIL_IF_1(condition, if_true, ...) \
+#define UTIL_IF_1(condition, if_true, ...)                                      \
     UTIL_IF_1_IMPL(condition, if_true, __VA_ARGS__)
 
 /**
@@ -125,7 +125,7 @@ extern "C" {
  * (let's say 1), UTIL_IF0_1 is empty, and doesn't contain a comma, so
  * second argument will be __VA_ARGS__, and it will get called
  */
-#define UTIL_IF_0_IMPL(condition, if_true, ...) \
+#define UTIL_IF_0_IMPL(condition, if_true, ...)                                 \
     UTIL_GET_ARG2_OBSTRUCT(UTIL_CAT_RAW(UTIL_IF0_, condition) if_true, __VA_ARGS__)
 
 /**
@@ -133,7 +133,7 @@ extern "C" {
  *
  * @note condition must be literally 0
  */
-#define UTIL_IF_0(condition, if_true, ...) \
+#define UTIL_IF_0(condition, if_true, ...)                                      \
     UTIL_IF_0_IMPL(condition, if_true, __VA_ARGS__)
 
 /**
@@ -151,7 +151,7 @@ extern "C" {
  * doesn't contain a comma, so second argument will be if_true, and
  * it will get called
  */
-#define UTIL_IF_NON0(condition, if_true, if_false) \
+#define UTIL_IF_NON0(condition, if_true, if_false)                              \
     UTIL_GET_ARG2_OBSTRUCT(UTIL_CAT_RAW(UTIL_IF_NON0_, condition) if_false, if_true)
 
 /**
@@ -169,7 +169,7 @@ extern "C" {
  * contain a comma, so second argument will be if_false, and it will get
  * called
  */
-#define UTIL_IF_EMPTY(condition, if_true, if_false) \
+#define UTIL_IF_EMPTY(condition, if_true, if_false)                             \
     UTIL_GET_ARG2_OBSTRUCT(UTIL_CAT_RAW(UTIL_IF_EMPTY_, condition) if_true, if_false)
 
 /* Enums ==================================================================== */
