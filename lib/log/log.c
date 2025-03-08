@@ -23,15 +23,15 @@
 /* Types ==================================================================== */
 /* Variables ================================================================ */
 /** Log file */
-static os_file_t * log_file;
+static vfs_file_t * log_file;
 
 /* Private functions ======================================================== */
 static void log_write(const uint8_t * buffer, size_t size) {
 #if USE_LOG_RESET_CURSOR
-  os_write(log_file, (const uint8_t *) "\r", 1);
+  vfs_write(log_file, (const uint8_t *) "\r", 1);
 #endif
 
-  os_write(log_file, buffer, size);
+  vfs_write(log_file, buffer, size);
 }
 
 static const char * log_get_level_color(log_level_t level) {
@@ -63,7 +63,7 @@ static const char * log_get_level_string(log_level_t level) {
 }
 
 /* Shared functions ========================================================= */
-error_t log_init(os_file_t * out) {
+error_t log_init(vfs_file_t * out) {
   log_file = out;
   return E_OK;
 }
@@ -136,5 +136,5 @@ void log_printf(const char * fmt, ...) {
   size_t size = vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
 
-  os_write(log_file, buf, size);
+  vfs_write(log_file, buf, size);
 }

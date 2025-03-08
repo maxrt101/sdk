@@ -23,6 +23,8 @@
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 /* Variables ================================================================ */
+static vfs_t * vfs_root = NULL;
+
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
 vfs_t * vfs_find_by_file_prefix(vfs_t * root, const char * filename) {
@@ -65,11 +67,18 @@ error_t vfs_init(vfs_t * vfs) {
   return E_OK;
 }
 
-error_t vfs_mount(vfs_t * root, vfs_t * vfs) {
-  ASSERT_RETURN(root && vfs, E_NULL);
-  ASSERT_RETURN(root != vfs, E_INVAL);
+error_t vfs_set_root(vfs_t * vfs) {
+  vfs_root = vfs;
+  return E_OK;
+}
 
-  vfs_t * iter = root;
+error_t vfs_mount(const char * mountpoint, vfs_t * vfs) {
+  ASSERT_RETURN(vfs_root && vfs && mountpoint, E_NULL);
+  ASSERT_RETURN(vfs_root != vfs, E_INVAL);
+
+  strcpy(vfs->mount_point, mountpoint);
+
+  vfs_t * iter = vfs_root;
   while (iter->impl.next) {
     iter = iter->impl.next;
   }
@@ -78,11 +87,11 @@ error_t vfs_mount(vfs_t * root, vfs_t * vfs) {
   return E_OK;
 }
 
-error_t vfs_unmount(vfs_t * root, vfs_t * vfs) {
-  ASSERT_RETURN(root && vfs, E_NULL);
-  ASSERT_RETURN(root != vfs, E_INVAL);
+error_t vfs_unmount(vfs_t * vfs) {
+  ASSERT_RETURN(vfs_root && vfs, E_NULL);
+  ASSERT_RETURN(vfs_root != vfs, E_INVAL);
 
-  vfs_t * iter = root;
+  vfs_t * iter = vfs_root;
   while (iter->impl.next != vfs) {
     if (!iter->impl.next) {
       return E_NOTFOUND;
@@ -94,10 +103,12 @@ error_t vfs_unmount(vfs_t * root, vfs_t * vfs) {
   return E_OK;
 }
 
-error_t vfs_create(vfs_t * root, vfs_file_t * file) {
-  ASSERT_RETURN(root && file, E_NULL);
+error_t vfs_create(const char * path, vfs_file_t * file) {
+  ASSERT_RETURN(vfs_root && file && path, E_NULL);
 
-  vfs_t * vfs = vfs_find_by_file_prefix(root, file->name);
+  strcpy(file->name, path);
+
+  vfs_t * vfs = vfs_find_by_file_prefix(vfs_root, file->name);
 
   if (!vfs) {
     return E_INVAL;
@@ -121,10 +132,10 @@ error_t vfs_create(vfs_t * root, vfs_file_t * file) {
   return E_OK;
 }
 
-error_t vfs_remove(vfs_t * root, vfs_file_t * file) {
-  ASSERT_RETURN(root && file, E_NULL);
+error_t vfs_remove(vfs_file_t * file) {
+  ASSERT_RETURN(vfs_root && file, E_NULL);
 
-  vfs_t * vfs = vfs_find_by_file_prefix(root, file->name);
+  vfs_t * vfs = vfs_find_by_file_prefix(vfs_root, file->name);
   vfs_file_t * file_iter = vfs->files;
 
   if (vfs->files == file) {
@@ -144,10 +155,10 @@ error_t vfs_remove(vfs_t * root, vfs_file_t * file) {
   return E_OK;
 }
 
-error_t vfs_rename(vfs_t * root, const char * old_name, const char * new_name) {
-  ASSERT_RETURN(old_name && new_name, E_NULL);
+error_t vfs_rename(const char * old_name, const char * new_name) {
+  ASSERT_RETURN(vfs_root && old_name && new_name, E_NULL);
 
-  vfs_file_t * file = vfs_find_file(root, old_name);
+  vfs_file_t * file = vfs_find_file(vfs_root, old_name);
 
   if (file) {
     UTIL_STR_COPY(file->name, new_name, VFS_MAX_PATH);
@@ -157,10 +168,10 @@ error_t vfs_rename(vfs_t * root, const char * old_name, const char * new_name) {
   return E_NOTFOUND;
 }
 
-vfs_file_t * vfs_open(vfs_t * root, const char * filename) {
-  ASSERT_RETURN(root, NULL);
+vfs_file_t * vfs_open(const char * filename) {
+  ASSERT_RETURN(vfs_root, NULL);
 
-  vfs_file_t * file = vfs_find_file(root, filename);
+  vfs_file_t * file = vfs_find_file(vfs_root, filename);
 
   ASSERT_RETURN(file, NULL);
 
@@ -172,7 +183,7 @@ vfs_file_t * vfs_open(vfs_t * root, const char * filename) {
       return file;
 
     case VFS_SYMLINK:
-      return vfs_open(root, file->symlink.name);
+      return vfs_open(file->symlink.name);
 
     case VFS_HARDLINK:
       return file->hardlink.file;
@@ -183,7 +194,7 @@ vfs_file_t * vfs_open(vfs_t * root, const char * filename) {
   }
 }
 
-error_t vfs_close(vfs_t * root, vfs_file_t * file) {
+error_t vfs_close(vfs_file_t * file) {
   return E_OK;
 }
 
@@ -272,7 +283,20 @@ size_t vfs_tell(vfs_file_t * file) {
   }
 }
 
-error_t vfs_ioctl(vfs_file_t * file, int cmd, va_list args) {
+error_t vfs_ioctl(vfs_file_t * file, int cmd, ...) {
+  ASSERT_RETURN(file, E_NULL);
+
+  va_list args;
+
+  va_start(args, cmd);
+  error_t err = vfs_ioctl_va(file, cmd, args);
+  va_end(args);
+
+  return err;
+}
+
+
+error_t vfs_ioctl_va(vfs_file_t * file, int cmd, va_list args) {
   ASSERT_RETURN(file, E_NULL);
 
   switch (file->type) {

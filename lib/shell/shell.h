@@ -21,7 +21,7 @@ extern "C" {
 #include "error/error.h"
 #include "util/compiler.h"
 #include "util/util.h"
-#include "os/fs/fs.h"
+#include "vfs/vfs.h"
 #include "tty/tty.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -194,7 +194,7 @@ typedef struct shell_s {
  * @param handler_ctx Context for commands handlers (user-defined)
  */
 error_t shell_init(
-    shell_t * ctx, os_file_t * file, void * handler_ctx);
+    shell_t * ctx, vfs_file_t * file, void * handler_ctx);
 
 /**
  * Starts shell

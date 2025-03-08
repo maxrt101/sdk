@@ -41,6 +41,8 @@
 /**
  * __setjmp can be redefined, if needed to provide custom implementation
  * if not defined - will use libc's implementation
+ *
+ * @note Works only with USE_OS_TRACE_SETJMP
  */
 #ifndef __setjmp
 #define __setjmp setjmp
@@ -49,6 +51,8 @@
 /**
  * __longjmp can be redefined, if needed to provide custom implementation
  * if not defined - will use libc's implementation
+ *
+ * @note Works only with USE_OS_TRACE_SETJMP
  */
 #ifndef __longjmp
 #define __longjmp longjmp

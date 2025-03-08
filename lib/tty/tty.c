@@ -23,7 +23,7 @@
 /* Variables ================================================================ */
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
-error_t tty_init(tty_t * tty, os_file_t * file) {
+error_t tty_init(tty_t * tty, vfs_file_t * file) {
   ASSERT_RETURN(tty && file, E_NULL);
 
   tty->file = file;
@@ -35,7 +35,7 @@ error_t tty_init(tty_t * tty, os_file_t * file) {
 error_t tty_reset(tty_t * tty) {
   ASSERT_RETURN(tty, E_NULL);
 
-  return os_ioctl(tty->file, OS_IOCTL_RESET_DEVICE);
+  return vfs_ioctl(tty->file, VFS_IOCTL_RESET_DEVICE);
 }
 
 error_t tty_line_from_str(tty_line_t * line, const char * str) {
@@ -81,7 +81,7 @@ bool tty_get_flag(tty_t * tty, tty_flag_t flag) {
 error_t tty_read_line(tty_t * tty, tty_line_t * line) {
   ASSERT_RETURN(tty && line, E_NULL);
 
-  os_ioctl(tty->file, OS_IOCTL_READ_TIMEOUT_ENABLE, false);
+  vfs_ioctl(tty->file, VFS_IOCTL_READ_TIMEOUT_ENABLE, false);
 
   line->size = 0;
 
@@ -89,7 +89,7 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
     char c = '\0';
 
     // Read 1 char from UART
-    os_read(tty->file, (uint8_t *) &c, 1);
+    vfs_read(tty->file, (uint8_t *) &c, 1);
 
     // If char is backspace
     if (c == TTY_ASCII_KEY_BACKSPACE) {
@@ -99,7 +99,7 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
         // send blank space to overwrite the symbol and another backspace
         // to put cursor 1 symbol back
         char buf[3] = {c, ' ', c};
-        os_write(tty->file, (uint8_t *) buf, 3);
+        vfs_write(tty->file, (uint8_t *) buf, 3);
         line->size -= 1;
       }
       // If there is nothing to erase, skip
@@ -109,7 +109,7 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
     // If char is enter (CR), send CR & LF back into the UART
     if (c == TTY_ASCII_KEY_ENTER) {
       char buf[2] = {'\r', '\n'};
-      os_write(tty->file, (uint8_t *) buf, 2);
+      vfs_write(tty->file, (uint8_t *) buf, 2);
       line->size += 1;
       break;
     }
@@ -119,7 +119,7 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
 
     // If input echoing is on, send received char back unto UART to display it
     if (tty_get_flag(tty, TTY_FLAG_ECHO_INPUT)) {
-      os_write(tty->file, (uint8_t *) &c, 1);
+      vfs_write(tty->file, (uint8_t *) &c, 1);
     }
   }
 
@@ -132,17 +132,17 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
 error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
   ASSERT_RETURN(tty && line, E_NULL);
 
-  os_ioctl(tty->file, OS_IOCTL_READ_TIMEOUT_ENABLE, true);
+  vfs_ioctl(tty->file, VFS_IOCTL_READ_TIMEOUT_ENABLE, true);
 
   if (line->size < TTY_MAX_LINE_SIZE) {
     char c = '\0';
 
-    if (!os_tell(tty->file)) {
+    if (!vfs_tell(tty->file)) {
       return E_AGAIN;
     }
 
     // Read 1 char from UART
-    ERROR_CHECK_RETURN(os_read(tty->file, (uint8_t *) &c, 1));
+    ERROR_CHECK_RETURN(vfs_read(tty->file, (uint8_t *) &c, 1));
 
     // If char is backspace
     if (c == TTY_ASCII_KEY_BACKSPACE) {
@@ -152,7 +152,7 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
         // send blank space to overwrite the symbol and another backspace
         // to put cursor 1 symbol back
         char buf[3] = {c, ' ', c};
-        os_write(tty->file, (uint8_t *) buf, 3);
+        vfs_write(tty->file, (uint8_t *) buf, 3);
         line->size -= 1;
       }
       // If there is nothing to erase, skip
@@ -162,7 +162,7 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
     // If char is enter (CR), send CR & LF back into the UART
     if (c == TTY_ASCII_KEY_ENTER) {
       char buf[2] = {'\r', '\n'};
-      os_write(tty->file, (uint8_t *) buf, 2);
+      vfs_write(tty->file, (uint8_t *) buf, 2);
       line->size += 1;
 
       // Terminate the buffer
@@ -175,7 +175,7 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
 
     // If input echoing is on, send received char back unto UART to display it
     if (tty_get_flag(tty, TTY_FLAG_ECHO_INPUT)) {
-      os_write(tty->file, (uint8_t *) &c, 1);
+      vfs_write(tty->file, (uint8_t *) &c, 1);
     }
 
     return E_AGAIN;
@@ -189,6 +189,6 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
 error_t tty_write_line(tty_t * tty, tty_line_t * line) {
   ASSERT_RETURN(tty && line, E_NULL);
 
-  return os_write(tty->file, (uint8_t *) line->buf, line->size);
+  return vfs_write(tty->file, (uint8_t *) line->buf, line->size);
 }
 

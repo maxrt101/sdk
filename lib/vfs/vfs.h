@@ -35,6 +35,25 @@ typedef enum {
   VFS_HARDLINK,
 } vfs_file_type_t;
 
+/**
+ * VFS IOCTL Commands
+ */
+typedef enum {
+  VFS_IOCTL_RESERVED = 0,
+
+  // Commands for specific needs in SDK
+  VFS_IOCTL_RESET_DEVICE = 128,
+  VFS_IOCTL_RESET_DEVICE_DEFERRED,
+  VFS_IOCTL_WRITE_DETECTED,
+  VFS_IOCTL_WRITE_DETECTED_CLEAR,
+  VFS_IOCTL_READ_TIMEOUT_ENABLE,
+
+  // For custom IOCTL commands
+#ifdef VFS_IOCTL_CMD_PORT
+  VFS_IOCTL_CMD_PORT
+#endif
+} vfs_ioctl_cmd_t;
+
 /* Types ==================================================================== */
 /** Forward declarations of structs */
 typedef struct vfs_s vfs_t;
@@ -186,12 +205,19 @@ typedef struct vfs_s {
 error_t vfs_init(vfs_t * vfs);
 
 /**
+ * Set root VFS
+ *
+ * @param vfs VFS Context
+ */
+error_t vfs_set_root(vfs_t * vfs);
+
+/**
  * Mounts a file system to root
  *
  * @param root Root VFS
  * @param vfs VFS Context
  */
-error_t vfs_mount(vfs_t * root, vfs_t * vfs);
+error_t vfs_mount(const char * mountpoint, vfs_t * vfs);
 
 /**
  * Unmounts a file system from root
@@ -199,7 +225,7 @@ error_t vfs_mount(vfs_t * root, vfs_t * vfs);
  * @param root Root VFS
  * @param vfs VFS Context
  */
-error_t vfs_unmount(vfs_t * root, vfs_t * vfs);
+error_t vfs_unmount(vfs_t * vfs);
 
 /**
  * Binds file context to VFS context, making file a part of fs
@@ -207,7 +233,7 @@ error_t vfs_unmount(vfs_t * root, vfs_t * vfs);
  * @param root Root VFS
  * @param file File context
  */
-error_t vfs_create(vfs_t * root, vfs_file_t * file);
+error_t vfs_create(const char * path, vfs_file_t * file);
 
 /**
  * Removes file context record from VFS context
@@ -215,7 +241,7 @@ error_t vfs_create(vfs_t * root, vfs_file_t * file);
  * @param root Root VFS
  * @param file File context
  */
-error_t vfs_remove(vfs_t * root, vfs_file_t * file);
+error_t vfs_remove(vfs_file_t * file);
 
 /**
  * Renames file
@@ -224,7 +250,7 @@ error_t vfs_remove(vfs_t * root, vfs_file_t * file);
  * @param old_name Old filename
  * @param new_name New filename
  */
-error_t vfs_rename(vfs_t * root, const char * old_name, const char * new_name);
+error_t vfs_rename(const char * old_name, const char * new_name);
 
 /**
  * Opens a file (returns a handle)
@@ -234,7 +260,7 @@ error_t vfs_rename(vfs_t * root, const char * old_name, const char * new_name);
  *
  * @retval VFS file handle
  */
-vfs_file_t * vfs_open(vfs_t * root, const char * filename);
+vfs_file_t * vfs_open(const char * filename);
 
 /**
  * Closes a file
@@ -242,7 +268,7 @@ vfs_file_t * vfs_open(vfs_t * root, const char * filename);
  * @param root Root VFS
  * @param file File handle
  */
-error_t vfs_close(vfs_t * root, vfs_file_t * file);
+error_t vfs_close(vfs_file_t * file);
 
 /**
  * Writes to an opened file
@@ -282,9 +308,18 @@ size_t vfs_tell(vfs_file_t * file);
  *
  * @param file File handle
  * @param cmd Command to execute
+ * @param ... Command arguments
+ */
+error_t vfs_ioctl(vfs_file_t * file, int cmd, ...);
+
+/**
+ * Performs an IOCTL operation on a file
+ *
+ * @param file File handle
+ * @param cmd Command to execute
  * @param args Command arguments
  */
-error_t vfs_ioctl(vfs_file_t * file, int cmd, va_list args);
+error_t vfs_ioctl_va(vfs_file_t * file, int cmd, va_list args);
 
 /**
  * Finds VFS context, to which the file with filename corresponds

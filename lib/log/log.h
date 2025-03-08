@@ -21,7 +21,7 @@ extern "C" {
 #include <stddef.h>
 #include "util/util.h"
 #include "error/error.h"
-#include "os/fs/fs.h"
+#include "vfs/vfs.h"
 
 /* Defines ================================================================== */
 /**
@@ -142,7 +142,7 @@ typedef enum {
  *
  * @param[in] file File to write to
  */
-error_t log_init(os_file_t * out);
+error_t log_init(vfs_file_t * out);
 
 /**
  * Convert string to log level enum value

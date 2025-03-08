@@ -16,7 +16,7 @@ extern "C" {
 /* Includes ================================================================= */
 #include "error/error.h"
 #include "util/compiler.h"
-#include "os/fs/fs.h"
+#include "vfs/vfs.h"
 #include <stdbool.h>
 
 /* Defines ================================================================== */
@@ -45,7 +45,7 @@ typedef struct {
  */
 typedef struct {
   /** File handle for IO */
-  os_file_t * file;
+  vfs_file_t * file;
 
   /** TTY Flags */
   uint8_t flags;
@@ -59,7 +59,7 @@ typedef struct {
  * @param tty TTY Context
  * @param file File for IO
  */
-error_t tty_init(tty_t * tty, os_file_t * file);
+error_t tty_init(tty_t * tty, vfs_file_t * file);
 
 /**
  * Reset TTY

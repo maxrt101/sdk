@@ -33,7 +33,7 @@ __STATIC_INLINE void shell_print_line(shell_t * ctx) {
   bool write_detected = false;
 
   // Get write detected flag
-  error_t err = os_ioctl(ctx->tty.file, OS_IOCTL_WRITE_DETECTED, &write_detected);
+  error_t err = vfs_ioctl(ctx->tty.file, VFS_IOCTL_WRITE_DETECTED, &write_detected);
 
   // If ioctl is implemented for tty file & no writes were detected - don't
   // print prompt with command, because there is no need
@@ -59,7 +59,7 @@ __STATIC_INLINE void shell_print_line(shell_t * ctx) {
   }
 
   // Clear write detect flag
-  os_ioctl(ctx->tty.file, OS_IOCTL_WRITE_DETECTED_CLEAR);
+  vfs_ioctl(ctx->tty.file, VFS_IOCTL_WRITE_DETECTED_CLEAR);
 }
 
 static error_t shell_exec(shell_t * ctx, int8_t * result) {
@@ -94,7 +94,7 @@ static error_t shell_exec(shell_t * ctx, int8_t * result) {
 }
 
 /* Shared functions ========================================================= */
-error_t shell_init(shell_t * ctx, os_file_t * file, void * handler_ctx) {
+error_t shell_init(shell_t * ctx, vfs_file_t * file, void * handler_ctx) {
   ASSERT_RETURN(ctx && file, E_NULL);
 
   memset(ctx, 0, sizeof(shell_t));
