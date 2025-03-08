@@ -6,7 +6,7 @@
  *
  * @brief Generic I2C HAL API, has no default implementation
  *
- * Board must implement init/deinit/,
+ * Board must implement init/deinit/send/recv,
  * using i2c_t* as void* pointer for device specific I2C context/handle
  *
  *  ========================================================================= */
