@@ -185,6 +185,20 @@ error_t led_off(led_t * led);
 error_t led_schedule(led_t * led, led_pattern_t * pattern);
 
 /**
+ * Stops current led pattern
+ *
+ * @param led LED Context
+ */
+error_t led_stop(led_t * led);
+
+/**
+ * Flushes led pattern queue
+ *
+ * @param led LED Context
+ */
+error_t led_flush(led_t * led);
+
+/**
  * Runs pattern to completion (blocking)
  *
  * @param[in] led LED Context

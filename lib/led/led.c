@@ -182,6 +182,22 @@ error_t led_schedule(led_t * led, led_pattern_t * pattern) {
   return E_OK;
 }
 
+error_t led_stop(led_t * led) {
+  ASSERT_RETURN(led, E_NULL);
+
+  led->pattern = NULL;
+  led->action_idx = 0;
+  led_off(led);
+
+  return E_OK;
+}
+
+error_t led_flush(led_t * led) {
+  ASSERT_RETURN(led, E_NULL);
+
+  return queue_clear(led->queue);
+}
+
 error_t led_run(led_t * led) {
   ASSERT_RETURN(led && led->pattern, E_NULL);
 
