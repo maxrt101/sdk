@@ -13,7 +13,7 @@ include_guard(GLOBAL)
 #
 # @brief Start of project configuration section
 #
-# You should place all your code between project_init/project_finit
+# You should place all your code between project_init/project_finish
 # In-between you can setup build parameters, such as include directories,
 # source files, compile options, etc., by calling functions like:
 #   project_add_src_recursive
@@ -44,6 +44,7 @@ macro(project_init)
     set(PROJECT_INCLUDE_DIRS "")
     set(PROJECT_INCLUDES "")
     set(PROJECT_SOURCES "")
+    set(PROJECT_LD_PATHS "")
     set(PROJECT_LD "")
     set(PROJECT_DEFINES "")
     set(PROJECT_COMPILE_FLAGS "")
@@ -63,13 +64,18 @@ endmacro()
 #
 # See `project_init()` description for more details
 #
-macro(project_finit)
+macro(project_finish)
     # Set dependency for LD scripts to every file in the project
     foreach (source ${PROJECT_SOURCES})
         set_source_files_properties(${source} PROPERTIES OBJECT_DEPENDS "${PROJECT_LD}")
     endforeach ()
 
     set(ld_script_options "")
+
+    # Parse linker paths
+    foreach (path ${PROJECT_LD_PATHS})
+        list(APPEND ld_script_options "-Wl,-L${path}")
+    endforeach ()
 
     # Parse linker scripts
     foreach (ld ${PROJECT_LD})
@@ -177,6 +183,15 @@ macro(project_add_inc_dirs)
 endmacro()
 
 #
+# @brief Add LD paths
+#
+# @param[in] ... List of linker paths
+#
+macro(project_add_ld_paths)
+    list(APPEND PROJECT_LD_PATHS ${ARGV})
+endmacro()
+
+#
 # @brief Add LD script
 #
 # @param[in] ... List of linker scripts
@@ -192,6 +207,21 @@ endmacro()
 #
 macro(project_add_define)
     list(APPEND PROJECT_DEFINES ${ARGV})
+endmacro()
+
+#
+# Sets ${result} to TRUE if exact define ${define} was added to PROJECT_DEFINES
+#
+# @param[in]  define Exact define passed to project_add_define (e.g. "USE_LED=1")
+# @param[out] result Variable to put result in. TRUE if found, FALSE otherwise
+#
+macro(project_has_define define result)
+    set(${result} FALSE)
+    foreach (def ${PROJECT_DEFINES})
+        if(${def} STREQUAL ${define})
+            set(${result} TRUE)
+        endif()
+    endforeach ()
 endmacro()
 
 #
