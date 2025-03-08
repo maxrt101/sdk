@@ -63,7 +63,7 @@ extern "C" {
     } while (0)
 
 /**
- * Implementation of ERROR_CHECK/ERROR_CHECK_RETURN
+ * Implementation of ERROR_CHECK
  */
 #define ERROR_CHECK_IMPL(error_var, expr, ...)                                        \
     do {                                                                              \
@@ -84,19 +84,38 @@ extern "C" {
     ERROR_CHECK_IMPL(UTIL_CAT(__err, __LINE__), expr, __VA_ARGS__)
 
 /**
+ * Default behaviour if ERROR_CHECK_RETURN expr fails
+ */
+#define ERROR_CHECK_RETURN_DEFAULT(error_var) \
+    return error_var
+
+/**
+ * Custom behaviour if ERROR_CHECK_RETURN expr fails
+ */
+#define ERROR_CHECK_RETURN_CUSTOM(error_var, ...) \
+    __VA_ARGS__; return error_var
+
+/**
+ * Implementation of ERROR_CHECK_RETURN
+ */
+#define ERROR_CHECK_RETURN_IMPL(error_var, expr, ...)                         \
+    do {                                                                      \
+       error_t error_var = expr;                                              \
+       ERROR_CHECK_IMPL_CHECK(error_var,                                      \
+          UTIL_IF_EMPTY(__VA_ARGS__,                                          \
+                        ERROR_CHECK_RETURN_DEFAULT(error_var),                \
+                        ERROR_CHECK_RETURN_CUSTOM(error_var, __VA_ARGS__)));  \
+    } while (0)
+
+
+/**
  * Checks expression for errors, if not E_OK, returns error
  *
  * @param expr Expression to check
  * @param ... Code to execute if check failed
  */
 #define ERROR_CHECK_RETURN(expr, ...)                                     \
-    do {                                                                  \
-       error_t error_var = expr;                                          \
-       ERROR_CHECK_IMPL_CHECK(error_var,                                  \
-          UTIL_IF_EMPTY(__VA_ARGS__,                                      \
-                        return error_var,                                 \
-                        __VA_ARGS__; return error_var));                  \
-    } while (0)
+  ERROR_CHECK_RETURN_IMPL(UTIL_CAT(__err, __LINE__), expr, __VA_ARGS__)
 
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
