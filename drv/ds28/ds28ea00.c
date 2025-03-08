@@ -1,6 +1,6 @@
 /** ========================================================================= *
  *
- * @file ds28.c
+ * @file ds28ea00.c
  * @date 23-07-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
