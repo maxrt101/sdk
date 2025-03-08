@@ -81,6 +81,10 @@ extern "C" {
 #define __STATIC_ASSERT(__expr, __msg) _Static_assert(__expr, __msg)
 #endif
 
+#ifndef __NO_INLINE
+#define __NO_INLINE __attribute__((noinline))
+#endif
+
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
