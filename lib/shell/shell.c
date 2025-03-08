@@ -62,12 +62,40 @@ __STATIC_INLINE void shell_print_line(shell_t * ctx) {
   os_ioctl(ctx->tty.file, OS_IOCTL_WRITE_DETECTED_CLEAR);
 }
 
+static error_t shell_exec(shell_t * ctx, int8_t * result) {
+  ASSERT_RETURN(ctx && result, E_NULL);
+
+#if USE_SHELL_ENV
+  // Process every token and check for variable references
+  for (uint8_t i = 0; i < ctx->ptr.size; ++i) {
+    ctx->ptr.buf[i] = shell_arg_parse(ctx, ctx->ptr.buf[i]);
+  }
+#endif
+
+  // Look for command handler by comparing name of each command to
+  // the first token
+  SHELL_ITER_COMMANDS(cmd) {
+    if (!strcmp(ctx->ptr.buf[0], cmd->name)) {
+      *result = cmd->handler(ctx, ctx->ptr.size, ctx->ptr.buf);
+
+      if (ctx->flags & SHELL_FLAG_ECHO_RES) {
+        log_printf("=%d\r\n", *result);
+      }
+
+      return E_OK;
+    }
+  }
+
+  log_error("Command '%s' not found", ctx->ptr.buf[0]);
+
+  *result = SHELL_FAIL;
+
+  return E_NOTFOUND;
+}
+
 /* Shared functions ========================================================= */
-error_t shell_init(
-    shell_t * ctx, os_file_t * file, void * handler_ctx,
-    shell_command_t * buffer, size_t size
-) {
-  ASSERT_RETURN(ctx && file && buffer, E_NULL);
+error_t shell_init(shell_t * ctx, os_file_t * file, void * handler_ctx) {
+  ASSERT_RETURN(ctx && file, E_NULL);
 
   memset(ctx, 0, sizeof(shell_t));
 
@@ -76,8 +104,6 @@ error_t shell_init(
   ctx->state = SHELL_STATE_IDLE;
   ctx->flags = SHELL_FLAG_SHOWPROMPT;
 
-  ctx->commands.buffer = buffer;
-  ctx->commands.size = size;
   ctx->commands.ctx = handler_ctx;
 
   return E_OK;
@@ -139,35 +165,11 @@ error_t shell_process(shell_t * ctx) {
     return E_EMPTY;
   }
 
-#if USE_SHELL_ENV
-  // Process every token and check for variable references
-  for (uint8_t i = 0; i < ctx->ptr.size; ++i) {
-    ctx->ptr.buf[i] = shell_arg_parse(ctx, ctx->ptr.buf[i]);
-  }
-#endif
+  int8_t result = SHELL_FAIL;
 
-  size_t i;
+  shell_exec(ctx, &result);
 
-  // Look for command handler by comparing name of each command to
-  // the first token
-  for (i = 0; i < ctx->commands.size; ++i) {
-    if (!strcmp(ctx->ptr.buf[0], ctx->commands.buffer[i].name)) {
-      int8_t result = ctx->commands.buffer[i].handler(ctx, ctx->ptr.size, ctx->ptr.buf);
-
-      if (ctx->flags & SHELL_FLAG_ECHO_RES) {
-        log_printf("=%d\r\n", result);
-      }
-
-      break;
-    }
-  }
-
-  // Notify user if command wasn't found
-  if (i == ctx->commands.size) {
-    log_error("Command '%s' not found", ctx->ptr.buf[0]);
-  }
-
-  return E_OK;
+  return result == SHELL_OK ? E_OK : E_FAILED;
 }
 
 int8_t shell_execute(shell_t * ctx, const char * command) {
@@ -179,33 +181,10 @@ int8_t shell_execute(shell_t * ctx, const char * command) {
 
   shell_parse(ctx);
 
-#if USE_SHELL_ENV
-  // Process every token and check for variable references
-  for (uint8_t i = 0; i < ctx->ptr.size; ++i) {
-    ctx->ptr.buf[i] = shell_arg_parse(ctx, ctx->ptr.buf[i]);
-  }
-#endif
+  int8_t result = SHELL_FAIL;
 
-  size_t i;
+  ERROR_CHECK(shell_exec(ctx, &result),
+    return SHELL_FAIL);
 
-  // Look for command handler by comparing name of each command to
-  // the first token
-  for (i = 0; i < ctx->commands.size; ++i) {
-    if (!strcmp(ctx->ptr.buf[0], ctx->commands.buffer[i].name)) {
-      int8_t result = ctx->commands.buffer[i].handler(ctx, ctx->ptr.size, ctx->ptr.buf);
-
-      if (ctx->flags & SHELL_FLAG_ECHO_RES) {
-        log_printf("=%d\r\n", result);
-      }
-
-      return result;
-    }
-  }
-
-  // Notify user if command wasn't found
-  if (i == ctx->commands.size) {
-    log_error("Command '%s' not found", ctx->ptr.buf[0]);
-  }
-
-  return SHELL_FAIL;
+  return result;
 }

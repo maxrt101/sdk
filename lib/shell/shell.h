@@ -20,23 +20,91 @@ extern "C" {
 /* Includes ================================================================= */
 #include "error/error.h"
 #include "util/compiler.h"
+#include "util/util.h"
 #include "os/fs/fs.h"
 #include "tty/tty.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
 /* Defines ================================================================== */
-#define SHELL_MAX_LINE_SIZE   64 /** Max size of one line read from input */
-#define SHELL_MAX_TOKENS      16  /** Max number of tokens */
+/**
+ * Max size of one line read from input
+ */
+#ifndef SHELL_MAX_LINE_SIZE
+#define SHELL_MAX_LINE_SIZE     64
+#endif
 
-#define SHELL_VAR_NAME_SIZE   8  /** Max size of variable name */
-#define SHELL_VAR_VALUE_SIZE  16 /** Max size of variable value */
-#define SHELL_VAR_BUFFER_SIZE 8  /** Max variable count */
+/**
+ * Max number of tokens
+ */
+#ifndef SHELL_MAX_TOKENS
+#define SHELL_MAX_TOKENS        16
+#endif
 
-#define SHELL_OK              0 /** Successful result */
-#define SHELL_FAIL            1 /** Operation failed */
+/**
+ * Max size of variable name
+ */
+#ifndef SHELL_VAR_NAME_SIZE
+#define SHELL_VAR_NAME_SIZE     8
+#endif
+
+/**
+ * Max size of variable value
+ */
+#ifndef SHELL_VAR_VALUE_SIZE
+#define SHELL_VAR_VALUE_SIZE    16
+#endif
+
+/**
+ * Max variable count
+ */
+#ifndef SHELL_VAR_BUFFER_SIZE
+#define SHELL_VAR_BUFFER_SIZE   8
+#endif
+
+/**
+ * Successful result
+ */
+#define SHELL_OK                0
+
+/**
+ * Operation failed
+ */
+#define SHELL_FAIL              1
+
+/**
+ * Internal macro
+ * Defines shell command type (for iterators, section start/end markers, etc)
+ */
+#define __SH_CMD_TYPE const shell_command_t *
 
 /* Macros =================================================================== */
+/**
+ * Declares shell command in shell linker section
+ */
+#define SHELL_DECLARE_COMMAND(__name, __fn, __help)                           \
+  __USED const shell_command_t UTIL_CAT(__name, _shell_command)               \
+    __SECTION(sh_cmd) = {#__name, __fn, __help}
+
+/**
+ * Iterates through all shell commands
+ *
+ * Example:
+ * @code{.c}
+ *   SHELL_ITER_COMMANDS(cmd) {
+ *     log_info("%s", cmd->name);
+ *   }
+ * @endcode
+ *
+ * @param __iter name of variable that will be the pointer to command
+ */
+#define SHELL_ITER_COMMANDS(__iter)                                           \
+  extern __SH_CMD_TYPE __start_sh_cmd;                                        \
+  extern __SH_CMD_TYPE __end_sh_cmd;                                          \
+  for (__SH_CMD_TYPE __iter = (__SH_CMD_TYPE) &__start_sh_cmd;                \
+      __iter != (__SH_CMD_TYPE) &__end_sh_cmd;                                \
+      __iter++)
+
 /* Enums ==================================================================== */
 /**
  * Shell state
@@ -69,8 +137,9 @@ typedef int8_t (*shell_command_handler_t)(shell_t *, uint8_t, const char **);
  * Shell command
  */
 typedef struct {
-  char * name;
+  const char * name;
   shell_command_handler_t handler;
+  const char * help;
 } shell_command_t;
 
 /**
@@ -94,10 +163,8 @@ typedef struct shell_s {
     bool is_new_line : 1;
   } internal_flags;
 
-  /** Holds user-defined commands */
+  /** Holds user-defined commands context */
   struct {
-    shell_command_t * buffer;
-    size_t size;
     void * ctx;
   } commands;
 
@@ -125,12 +192,9 @@ typedef struct shell_s {
  * @param ctx Shell module context
  * @param file File used for IO
  * @param handler_ctx Context for commands handlers (user-defined)
- * @param buffer Command handlers
- * @param size Buffer size
  */
 error_t shell_init(
-    shell_t * ctx, os_file_t * file, void * handler_ctx,
-    shell_command_t * buffer, size_t size);
+    shell_t * ctx, os_file_t * file, void * handler_ctx);
 
 /**
  * Starts shell
