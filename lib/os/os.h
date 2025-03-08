@@ -126,13 +126,6 @@ extern "C" {
 #define USE_OS_TRACE_SETJMP                   0
 #endif
 
-/**
- * If USE_OS_TRACE_SETJMP is enabled, it can also dump jmp_buf
- */
-#ifndef USE_OS_TRACE_SETJMP_DUMP_JMP_BUF
-#define USE_OS_TRACE_SETJMP_DUMP_JMP_BUF      0
-#endif
-
 /* Macros =================================================================== */
 /**
  * Creates task stack and handles, initializes handle
@@ -180,41 +173,9 @@ typedef enum {
 
 /* Types ==================================================================== */
 /**
- * setjmp/longjmp buffer description for arm
- * TODO: Move outside, maybe remove altogether and expect os port to provide
- *       DUMP_JMP_BUF definition instead
- */
-typedef struct {
-  // r4 - r10, fp, sp, lr
-  uint32_t r4;
-  uint32_t r5;
-  uint32_t r6;
-  uint32_t r7;
-  uint32_t r8;
-  uint32_t r9;
-  uint32_t r10;
-  uint32_t fp;
-  uint32_t sp;
-  uint32_t lr;
-
-  // d8 - d15
-#if __FPU_PRESENT
-  uint32_t d8;
-  uint32_t d9;
-  uint32_t d10;
-  uint32_t d11;
-  uint32_t d12;
-  uint32_t d13;
-  uint32_t d14;
-  uint32_t d15;
-#endif
-} os_task_ctx_arch_t;
-
-/**
  * Task context - registers and whatnot, used by setjmp/longjmp
  */
 typedef union {
-  os_task_ctx_arch_t frame;
   jmp_buf buf;
 } os_task_ctx_t;
 
@@ -354,6 +315,23 @@ os_task_t * os_task_current(void);
 __STATIC_INLINE void os_yield(void) {
   os_delay(1);
 }
+
+/**
+ * Iterate through tasks
+ *
+ * Example:
+ * @code{.c}
+ * os_task_t * iter = NULL;
+ *
+ * while (os_task_iter(&iter)) {
+ *   ...
+ * }
+ * @endcode
+ *
+ * @param task pointer to temporary task buffer
+ * @retval true if next task exists, false if not
+ */
+bool os_task_iter(os_task_t ** task);
 
 /**
  * Converts os_task_state_t enum value to it's string representation

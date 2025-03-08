@@ -13,11 +13,6 @@
 #include "os/power/power.h"
 #include "os.h"
 
-#include <time.h>
-
-#include "bsp.h"
-#include "time/sleep.h"
-
 /* Defines ================================================================== */
 #define LOG_TAG OS
 
@@ -60,21 +55,6 @@
 #endif
 
 /* Macros =================================================================== */
-// TODO: Move to os port
-#define DUMP_JMP_BUF(__buf) \
-  log_printf("r4=%08x r5=%08x r6=%08x r7=%08x r8=%08x r9=%08x r10=%08x fp=%08x sp=%08x lr=%08x\r\n", \
-    ((os_task_ctx_arch_t*)__buf)->r4,  \
-    ((os_task_ctx_arch_t*)__buf)->r5,  \
-    ((os_task_ctx_arch_t*)__buf)->r6,  \
-    ((os_task_ctx_arch_t*)__buf)->r7,  \
-    ((os_task_ctx_arch_t*)__buf)->r8,  \
-    ((os_task_ctx_arch_t*)__buf)->r9,  \
-    ((os_task_ctx_arch_t*)__buf)->r10, \
-    ((os_task_ctx_arch_t*)__buf)->fp,  \
-    ((os_task_ctx_arch_t*)__buf)->sp,  \
-    ((os_task_ctx_arch_t*)__buf)->lr   \
-  )
-
 #if USE_OS_TRACE_SETJMP
 /**
  * If USE_OS_TRACE_SETJMP is enabled, replaces setjmp with this macro
@@ -88,7 +68,6 @@
 #define setjmp(__buf)                                                     \
   (                                                                       \
     log_debug("setjmp(%p)  at %s:%d", &__buf, __FUNCTION__, __LINE__),    \
-    UTIL_IF_1(USE_OS_TRACE_SETJMP_DUMP_JMP_BUF, DUMP_JMP_BUF(__buf), 0),  \
     __setjmp(__buf)                                                       \
   )
 
@@ -104,7 +83,6 @@
 #define longjmp(__buf, __ret)                                             \
   (                                                                       \
     log_debug("longjmp(%p) at %s:%d", &__buf, __FUNCTION__, __LINE__),    \
-    UTIL_IF_1(USE_OS_TRACE_SETJMP_DUMP_JMP_BUF, DUMP_JMP_BUF(__buf), 0),  \
     __longjmp(__buf, __ret)                                               \
   )
 #endif
@@ -422,6 +400,18 @@ os_task_t * os_task_get(const char * name) {
 
 os_task_t * os_task_current(void) {
   return os.task.current;
+}
+
+bool os_task_iter(os_task_t ** task) {
+  ASSERT_RETURN(task, false);
+
+  if (*task) {
+    *task = (*task)->next;
+    return *task;
+  } else {
+    *task = os.task.head;
+    return true;
+  }
 }
 
 const char * os_task_state_to_str(os_task_state_t state) {
