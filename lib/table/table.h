@@ -4,7 +4,7 @@
  * @date 27-09-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief Hash table structure
+ * @brief Hash table data structure
  *
  *  ========================================================================= */
 #pragma once
@@ -17,6 +17,7 @@ extern "C" {
 #include "error/error.h"
 #include "util/compiler.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 
 /* Defines ================================================================== */

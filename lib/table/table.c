@@ -4,7 +4,7 @@
  * @date 27-09-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief
+ * @brief Hash table data structure
  *
  *  ========================================================================= */
 
