@@ -22,14 +22,14 @@
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 /* Variables ================================================================ */
-tests_ctx_t tests;
-
 /* Private functions ======================================================== */
 error_t vfs_table_pool_alloc(vfs_table_pool_t * pool, table_t ** table);
 error_t vfs_node_init(vfs_node_t * node, vfs_node_type_t type, const char * name, bool allocated);
 vfs_node_t * vfs_find_node(vfs_t * vfs, const char * path);
 
-TEST_DECLARE(sizeof) {
+TEST_SUITE_DECLARE(VFS, 32);
+
+TEST_DECLARE(VFS, sizeof) {
   TEST_LOG(
     "sizeof(vfs_t)                  %lu\n"
     "sizeof(vfs_node_t)             %lu\n"
@@ -67,7 +67,7 @@ TEST_DECLARE(sizeof) {
   return true;
 }
 
-TEST_DECLARE(vfs_path_split) {
+TEST_DECLARE(VFS, vfs_path_split) {
   const char * expected[] = {"dev", "console", "0"};
   const char * path = "/dev/console/0";
 
@@ -87,7 +87,7 @@ TEST_DECLARE(vfs_path_split) {
   return true;
 }
 
-TEST_DECLARE(vfs_path_concat) {
+TEST_DECLARE(VFS, vfs_path_concat) {
   const char * expected = "/dev/console/0";
 
   char path_dest[20];
@@ -119,7 +119,7 @@ TEST_DECLARE(vfs_path_concat) {
   return true;
 }
 
-TEST_DECLARE(suffix_prefix) {
+TEST_DECLARE(VFS, suffix_prefix) {
   char path_remove_suffix[VFS_MAX_PATH];
   strcpy(path_remove_suffix, "/dev/console/0");
   TEST_ASSERT_ERROR(vfs_path_remove_suffix(path_remove_suffix, 2), "vfs_path_remove_suffix failed");
@@ -135,7 +135,7 @@ TEST_DECLARE(suffix_prefix) {
   return true;
 }
 
-TEST_DECLARE(parent_and_name) {
+TEST_DECLARE(VFS, parent_and_name) {
   char parent[VFS_MAX_PATH];
   strcpy(parent, "/dev/console/0");
   TEST_ASSERT_ERROR(vfs_path_parent(parent), "vfs_path_parent failed");
@@ -163,7 +163,7 @@ TEST_DECLARE(parent_and_name) {
   return true;
 }
 
-TEST_DECLARE(vfs_find_node) {
+TEST_DECLARE(VFS, vfs_find_node) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -207,7 +207,7 @@ TEST_DECLARE(vfs_find_node) {
   return true;
 }
 
-TEST_DECLARE(vfs_create) {
+TEST_DECLARE(VFS, vfs_create) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -229,7 +229,7 @@ TEST_DECLARE(vfs_create) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_folder) {
+TEST_DECLARE(VFS, vfs_create_folder) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -245,7 +245,7 @@ TEST_DECLARE(vfs_create_folder) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_multiple_in_folder) {
+TEST_DECLARE(VFS, vfs_create_multiple_in_folder) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -265,7 +265,7 @@ TEST_DECLARE(vfs_create_multiple_in_folder) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_file) {
+TEST_DECLARE(VFS, vfs_create_file) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -299,7 +299,7 @@ TEST_DECLARE(vfs_create_file) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_block) {
+TEST_DECLARE(VFS, vfs_create_block) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -332,7 +332,7 @@ TEST_DECLARE(vfs_create_block) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_symlink) {
+TEST_DECLARE(VFS, vfs_create_symlink) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -352,7 +352,7 @@ TEST_DECLARE(vfs_create_symlink) {
   return true;
 }
 
-TEST_DECLARE(vfs_create_hardlink) {
+TEST_DECLARE(VFS, vfs_create_hardlink) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -372,7 +372,7 @@ TEST_DECLARE(vfs_create_hardlink) {
   return true;
 }
 
-TEST_DECLARE(vfs_remove) {
+TEST_DECLARE(VFS, vfs_remove) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -392,7 +392,7 @@ TEST_DECLARE(vfs_remove) {
   return true;
 }
 
-TEST_DECLARE(vfs_rename) {
+TEST_DECLARE(VFS, vfs_rename) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -422,7 +422,7 @@ TEST_DECLARE(vfs_rename) {
   return true;
 }
 
-TEST_DECLARE(vfs_mkdir) {
+TEST_DECLARE(VFS, vfs_mkdir) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 5);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 5);
@@ -449,7 +449,7 @@ TEST_DECLARE(vfs_mkdir) {
   return true;
 }
 
-TEST_DECLARE(vfs_dynamic) {
+TEST_DECLARE(VFS, vfs_dynamic) {
   trace_alloc_start(NULL);
 
   vfs_t vfs;
@@ -497,7 +497,7 @@ TEST_DECLARE(vfs_dynamic) {
   return true;
 }
 
-TEST_DECLARE(vfs_open) {
+TEST_DECLARE(VFS, vfs_open) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -526,7 +526,7 @@ TEST_DECLARE(vfs_open) {
   return true;
 }
 
-TEST_DECLARE(vfs_read) {
+TEST_DECLARE(VFS, vfs_read) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -563,7 +563,7 @@ TEST_DECLARE(vfs_read) {
   return true;
 }
 
-TEST_DECLARE(vfs_write) {
+TEST_DECLARE(VFS, vfs_write) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -605,7 +605,7 @@ TEST_DECLARE(vfs_write) {
   return true;
 }
 
-TEST_DECLARE(vfs_seek) {
+TEST_DECLARE(VFS, vfs_seek) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -643,7 +643,7 @@ TEST_DECLARE(vfs_seek) {
   return true;
 }
 
-TEST_DECLARE(vfs_tell) {
+TEST_DECLARE(VFS, vfs_tell) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -733,7 +733,7 @@ error_t block_ioctl(void * ctx, vfs_file_t * file, int cmd, va_list args) {
   return E_OK;
 }
 
-TEST_DECLARE(vfs_block) {
+TEST_DECLARE(VFS, vfs_block) {
   memset(&block_test_ctx, 0, sizeof(block_test_ctx));
 
   vfs_t vfs;
@@ -769,7 +769,7 @@ TEST_DECLARE(vfs_block) {
   return true;
 }
 
-TEST_DECLARE(vfs_dynamic_file) {
+TEST_DECLARE(VFS, vfs_dynamic_file) {
   vfs_t vfs;
   VFS_DECLARE_NODE_POOL(vfs_node_pool, 4);
   VFS_DECLARE_TABLE_POOL(vfs_table_pool, 4);
@@ -803,6 +803,6 @@ TEST_DECLARE(vfs_dynamic_file) {
 int main(int argc, char ** argv) {
   TEST_LOG_PORT(COLOR_BOLD "====================[ VFS ]====================\n" COLOR_RESET);
 
-  return tests_run(argc, argv);
+  return tests_run(&VFS, argc, argv);
 }
 
