@@ -27,14 +27,6 @@ extern "C" {
 
 /* Defines ================================================================== */
 /**
- * Max tests number. Needed because TEST_DECLARE uses constructors and static
- * array to store tests
- */
-#ifndef TESTS_MAX
-#define TESTS_MAX     32
-#endif
-
-/**
  * Log print function
  */
 #ifndef TEST_LOG_PORT
@@ -114,32 +106,49 @@ extern "C" {
   TEST_ASSERT((__e) == E_OK, __fail_str)
 
 /**
- * Declare test
+ * Declare test suite
+ *
+ * @param __name Test suite name
+ * @param __size Max tests for this suite
+ */
+#define TEST_SUITE_DECLARE(__name, __size)                                      \
+  test_t test_buffer_ ## __name[__size] = {0};                                  \
+  tests_suite_t __name = {                                                      \
+    test_buffer_ ## __name,                                                     \
+    __size,                                                                     \
+  };
+
+/**
+ * Declare test in a suite
  *
  * Example:
  * @code{.c}
- * TEST_DECLARE(test_name) {
+ * TEST_SUITE_DECLARE(test_suite);
+ * TEST_DECLARE(test_suite, test_name) {
  *   TEST_ASSERT(10 == 20, "values are not the same");
  * }
  * @endcode
  *
+ * @param __suite Test suite name
  * @param __name Test name (identifier - no spaces, not special symbols)
  */
-#define TEST_DECLARE(__name)                                                    \
-  bool test_ ## __name ();                                                      \
+#define TEST_DECLARE(__suite, __name)                                           \
+  bool test_ ## __name (tests_suite_t * suite);                                 \
   __CONSTRUCTOR(255) void __init_ ## __name(void) {                             \
-    tests.tests[tests.size].fn = test_ ## __name;                               \
-    tests.tests[tests.size].name = #__name;                                     \
-    tests.size++;                                                               \
+    __suite.tests[__suite.size].fn = test_ ## __name;                           \
+    __suite.tests[__suite.size].name = #__name;                                 \
+    __suite.size++;                                                             \
   }                                                                             \
-  bool test_ ## __name ()
+  bool test_ ## __name (tests_suite_t * suite)
 
 /**
  * Use in tests to log, won't do anything if quiet flag is true
+ *
+ * @warning Can only be called from a test
  */
 #define TEST_LOG(...)                                                           \
   do {                                                                          \
-    if (!tests.context.quiet) {                                                 \
+    if (!suite->context.quiet) {                                                \
       TEST_LOG_PORT(__VA_ARGS__);                                               \
     }                                                                           \
   } while (0)
@@ -147,9 +156,14 @@ extern "C" {
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 /**
+ * Forward declaration of test suite
+ */
+typedef struct tests_suite_s tests_suite_t;
+
+/**
  * Actual test function type
  */
-typedef bool (*test_fn_t)(void);
+typedef bool (*test_fn_t)(tests_suite_t *);
 
 /**
  * Test context
@@ -162,34 +176,37 @@ typedef struct {
 /**
  * Tests (test suite) context
  */
-typedef struct {
+typedef struct tests_suite_s {
+  test_t * tests;
+  size_t capacity;
   size_t size;
-  test_t tests[TESTS_MAX];
 
   struct {
     bool quiet;
   } context;
-} tests_ctx_t;
+} tests_suite_t;
 
 /* Variables ================================================================ */
-/**
- * Every test suite (collection of tests in tests_ctx_t) need to define
- * global variable `tests` so that TEST_DECLARE knows where to put new tests
- *
- * TODO: Get rid of this, create TEST_SUIT_DECLARE(suit) &
- *       TEST_DECLARE(suit, test) & tests_run(&suit, argc, argv)
- */
-extern tests_ctx_t tests;
-
 /* Shared functions ========================================================= */
 /**
  * Runs all tests in global suit `tests`
+ *
+ * Example:
+ * @code{.c}
+ * TEST_SUITE_DECLARE(test_suite);
+ * TEST_DECLARE(test_suite, test_name) {
+ *   TEST_ASSERT(10 == 20, "values are not the same");
+ * }
+ * int main(int argc, char ** argv) {
+ *   return tests_run(argc, argv);
+ * }
+ * @endcode
  *
  * @param argc Command line argument count
  * @param argv Command line argument array
  * @return Number of failed tests
  */
-int tests_run(int argc, char ** argv);
+int tests_run(tests_suite_t * suite, int argc, char ** argv);
 
 #ifdef __cplusplus
 }

@@ -13,7 +13,6 @@
 #include "log/log.h"
 
 /* Defines ================================================================== */
-
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
 /* Enums ==================================================================== */
@@ -21,8 +20,8 @@
 /* Variables ================================================================ */
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
-int tests_run(int argc, char ** argv) {
-  tests.context.quiet = false;
+int tests_run(tests_suite_t * suite, int argc, char ** argv) {
+  suite->context.quiet = false;
 
   for (size_t i = 1; i < argc; ++i) {
     if (!strcmp(argv[i], "-h")) {
@@ -34,30 +33,30 @@ int tests_run(int argc, char ** argv) {
       );
       return 0;
     } else if (!strcmp(argv[i], "-q")) {
-      tests.context.quiet = true;
+      suite->context.quiet = true;
     } else {
       TEST_LOG_PORT("Unrecognized argument '%s'\r\n", argv[i]);
     }
   }
 
-  TEST_LOG_PORT("Current test run: %zu\n\n", tests.size);
+  TEST_LOG_PORT("Current test run: %zu\n\n", suite->size);
 
   size_t passed = 0;
   size_t failed = 0;
 
-  for (size_t i = 0; i < tests.size; ++i) {
+  for (size_t i = 0; i < suite->size; ++i) {
     TEST_LOG(COLOR_BOLD "========== TEST %s ==========\n" COLOR_RESET,
-      tests.tests[i].name);
+      suite->tests[i].name);
 
-    bool result = tests.tests[i].fn();
+    bool result = suite->tests[i].fn(suite);
 
     if (result) {
       TEST_LOG_PORT("[" COLOR_GREEN "PASS" COLOR_RESET "] %s\n",
-        tests.tests[i].name);
+        suite->tests[i].name);
       passed++;
     } else {
       TEST_LOG_PORT("[" COLOR_RED "FAIL" COLOR_RESET "] %s\n",
-        tests.tests[i].name);
+        suite->tests[i].name);
       failed++;
     }
 
