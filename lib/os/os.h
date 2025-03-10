@@ -4,6 +4,8 @@
  * @date 27-02-2025
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
+ * TODO: Add user task context?
+ *
  *  ========================================================================= */
 #pragma once
 
