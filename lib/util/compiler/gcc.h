@@ -21,6 +21,22 @@ extern "C" {
 #endif
 
 /* Defines ================================================================== */
+#ifndef __STATIC_INLINE
+#define __STATIC_INLINE static inline
+#endif
+
+#ifndef __PACKED_STRUCT
+#define __PACKED_STRUCT struct __attribute__((packed))
+#endif
+
+#ifndef __PACKED_UNION
+#define __PACKED_UNION union __attribute__((packed))
+#endif
+
+#ifndef __PACKED_ENUM
+#define __PACKED_ENUM enum __attribute__((packed))
+#endif
+
 #ifndef __NAKED
 #define __NAKED __attribute__((naked))
 #endif
