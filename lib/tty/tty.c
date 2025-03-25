@@ -1,6 +1,6 @@
 /** ========================================================================= *
  *
- * @file shell_env.c
+ * @file tty.c
  * @date 09-09-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
@@ -13,9 +13,6 @@
 #include "error/assertion.h"
 
 /* Defines ================================================================== */
-#define TTY_ASCII_KEY_BACKSPACE 0x08 /* ASCII value for backspace */
-#define TTY_ASCII_KEY_ENTER     '\r' /* UART sends CR if enter is pressed */
-
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
 /* Enums ==================================================================== */

@@ -20,7 +20,26 @@ extern "C" {
 #include <stdbool.h>
 
 /* Defines ================================================================== */
-#define TTY_MAX_LINE_SIZE 64 /** Max size of line */
+/**
+ * Max size of line
+ */
+#ifndef TTY_MAX_LINE_SIZE
+#define TTY_MAX_LINE_SIZE 64
+#endif
+
+/**
+ * ASCII value for backspace
+ */
+#ifndef TTY_ASCII_KEY_BACKSPACE
+#define TTY_ASCII_KEY_BACKSPACE 0x08
+#endif
+
+/**
+ * UART sends CR if enter is pressed
+ */
+#ifndef TTY_ASCII_KEY_ENTER
+#define TTY_ASCII_KEY_ENTER '\r'
+#endif
 
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
