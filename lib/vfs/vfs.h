@@ -464,11 +464,25 @@ error_t vfs_path_parent(char * path);
 error_t vfs_path_name(char * path);
 
 /**
+ *
+ * @param file
+ * @return
+ */
+size_t vfs_get_file_size(vfs_file_t * file);
+
+/**
  * Retrieves name (last token) from file
  *
  * @param file File to get name from
  */
 const char * vfs_get_file_name(vfs_file_t * file);
+
+/**
+ *
+ * @param type
+ * @return
+ */
+const char * vfs_node_type_to_string(vfs_node_type_t type);
 
 /**
  * Initializes VFS instance

@@ -13,6 +13,7 @@
 #include "os/alloc/alloc.h"
 #include "error/assertion.h"
 #include "util/util.h"
+#include "log/log.h"
 #include <string.h>
 
 /* Defines ================================================================== */
@@ -134,6 +135,7 @@ __STATIC_INLINE error_t vfs_node_alloc(vfs_t * vfs, vfs_node_t ** node) {
     return vfs_node_pool_alloc(vfs->node_pool, node);
   } else {
     *node = VFS_ALLOC(sizeof(vfs_node_t));
+    ASSERT_RETURN(*node, E_NOMEM);
   }
 
   return E_OK;
@@ -165,7 +167,12 @@ __STATIC_INLINE error_t vfs_table_alloc(vfs_t * vfs, table_t ** table) {
     return vfs_table_pool_alloc(vfs->table_pool, table);
   } else {
     *table = VFS_ALLOC(sizeof(table_t));
-    ERROR_CHECK_RETURN(table_init(*table, VFS_ALLOC(sizeof(table_node_t) * VFS_MAX_FOLDER_CHILDREN), VFS_MAX_FOLDER_CHILDREN));
+    ASSERT_RETURN(*table, E_NOMEM);
+
+    table_node_t * children = VFS_ALLOC(sizeof(table_node_t) * VFS_MAX_FOLDER_CHILDREN);
+    ASSERT_RETURN(children, E_NOMEM);
+
+    ERROR_CHECK_RETURN(table_init(*table, children, VFS_MAX_FOLDER_CHILDREN));
   }
 
   return E_OK;
@@ -370,7 +377,14 @@ __STATIC_INLINE error_t vfs_create_file_common(vfs_t * vfs, const char * path, c
 #if VFS_USE_DYNAMIC_FILE_ALLOC
   if (!node->file.data.buffer) {
     node->file.data.buffer = VFS_ALLOC(node->file.data.capacity);
+
+    // If allocation failed - remove file & return error
+    ASSERT_OR_ELSE(node->file.data.buffer,
+      vfs_remove(vfs, path);
+      return E_NOMEM);
+
     node->file.data.flags.allocated = true;
+    node->file.data.size = 0;
   }
 #endif
 
@@ -597,6 +611,16 @@ error_t vfs_path_name(char * path) {
   return E_OK;
 }
 
+size_t vfs_get_file_size(vfs_file_t * file) {
+  ASSERT_RETURN(file, 0);
+
+  if (file->head.type == VFS_FILE) {
+    return file->file.data.size;
+  }
+
+  return 0;
+}
+
 const char * vfs_get_file_name(vfs_file_t * file) {
   ASSERT_RETURN(file, NULL);
 
@@ -611,6 +635,17 @@ const char * vfs_get_file_name(vfs_file_t * file) {
   }
 }
 
+const char * vfs_node_type_to_string(vfs_node_type_t type) {
+  switch (type) {
+    case VFS_FOLDER:    return "FOLDER";
+    case VFS_FILE:      return "FILE";
+    case VFS_BLOCK:     return "BLOCK";
+    case VFS_SYMLINK:   return "SYMLINK";
+    case VFS_HARDLINK:  return "HARDLINK";
+    default:
+      return "NONE";
+  }
+}
 
 error_t vfs_init(vfs_t * vfs, vfs_node_pool_t * node_pool, vfs_table_pool_t * table_pool) {
   ASSERT_RETURN(vfs, E_NULL);
@@ -830,6 +865,10 @@ error_t vfs_mkdir(vfs_t * vfs, const char * path) {
 vfs_file_t * vfs_open(vfs_t * vfs, const char * path) {
   ASSERT_RETURN(vfs && path, NULL);
 
+  if (!strcmp(path, "/")) {
+    return &vfs->root;
+  }
+
   vfs_node_t * node = vfs_resolve_link(vfs, vfs_find_node(vfs, path));
 
   switch (node->head.type) {
@@ -857,6 +896,8 @@ error_t vfs_close(vfs_file_t * file) {
     if (file->block.data.close) {
       ERROR_CHECK_RETURN(file->block.data.close(file->block.data.ctx, file));
     }
+  } else if (file->head.type == VFS_FILE) {
+    file->file.data.offset = 0;
   }
 
   // TODO: ???
@@ -894,9 +935,12 @@ error_t vfs_write(vfs_file_t * file, const uint8_t * buffer, size_t size) {
 
   switch (file->head.type) {
     case VFS_FILE: {
-      size_t write_size = UTIL_MIN(file->file.data.size - file->file.data.offset, size);
+      size_t write_size = UTIL_MIN(file->file.data.capacity - file->file.data.offset, size);
       void * res = memcpy(file->file.data.buffer + file->file.data.offset, buffer, write_size);
       file->file.data.offset += write_size;
+      // TODO: Check
+      log_debug("write ofs=%d size=%d wr_size=%d", file->file.data.offset, file->file.data.size, write_size);
+      file->file.data.size = UTIL_MAX(file->file.data.size, file->file.data.offset + write_size);
       return res == file->file.data.buffer + file->file.data.offset - write_size ? E_OK : E_FAILED;
     }
 
