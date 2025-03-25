@@ -35,7 +35,7 @@ __STATIC_INLINE void * os_heap_alloc_impl(os_heap_block_t * block, size_t size) 
   } else {
     if (block->size >= size) {
       os_heap_block_t * new_block =
-          (os_heap_block_t *) (block + block->size - size - sizeof(os_heap_block_t));
+          (os_heap_block_t *) ((uint8_t *) block + block->size - size - sizeof(os_heap_block_t));
 
       new_block->next = NULL;
       new_block->size = size;
@@ -107,6 +107,8 @@ __STATIC_INLINE error_t os_heap_defrag_impl(os_heap_block_t * block) {
 error_t os_heap_create(os_heap_t * heap, void * start, size_t size) {
   ASSERT_RETURN(heap, E_NULL);
   ASSERT_RETURN(start && size, E_INVAL);
+
+  memset(start, 0, size);
 
   heap->size = size;
   heap->start = start;

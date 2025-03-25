@@ -32,6 +32,7 @@ typedef struct os_heap_block_s {
     OS_HEAP_BLOCK_FREE = 0,
     OS_HEAP_BLOCK_USED
   } state;                       /** State of current block (FREE/USED) */
+  uint8_t data[0];
 } os_heap_block_t;
 
 /**
