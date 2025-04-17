@@ -35,7 +35,7 @@ extern "C" {
  * Queue size for async recv context
  */
 #ifndef TRX_QUEUE_SIZE
-#define TRX_QUEUE_SIZE 5
+#define TRX_QUEUE_SIZE 4
 #endif
 
 /**
@@ -61,54 +61,12 @@ typedef struct {
 } ra02_trx_cfg_t;
 
 /**
- * Container for incoming data, used in async_recv
- */
-typedef struct {
-  bool used;
-  uint8_t size;
-  uint8_t data[];
-} ra02_trx_packet_t;
-
-/**
- * RA-02 TRX Async Recv Context, used by async_recv
- */
-typedef struct ra02_trx_async_ctx_s {
-  /**
-   * Async Recv State
-   */
-  enum {
-    RA02_ASYNC_STATE_NONE = 0,
-    RA02_ASYNC_STATE_INIT,
-    RA02_ASYNC_STATE_RECV,
-  } state;
-
-  /**
-   * Timeout for single RX operation, automatically restarts
-   */
-  timeout_t timeout;
-
-  /**
-   * Storage for received packet data
-   */
-  ra02_trx_packet_t packets[TRX_QUEUE_SIZE];
-
-  /**
-   * Queue handle and element storage
-   */
-  struct {
-    queue_element_t elements[TRX_QUEUE_SIZE];
-    queue_t handle;
-  } queue;
-} ra02_trx_async_ctx_t;
-
-/**
  * RA-02 TRX driver context
  */
 typedef struct {
   spi_t * spi;
   gpio_t reset;
   uint8_t irq_flags;
-  ra02_trx_async_ctx_t async;
 } ra02_trx_t;
 
 /* Variables ================================================================ */
@@ -141,9 +99,6 @@ error_t ra02_get_rssi(trx_t * trx, uint8_t * rssi);
 error_t ra02_irq_handler(trx_t * trx);
 error_t ra02_send(trx_t * trx, uint8_t * buf, size_t size);
 error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
-error_t ra02_async_recv(trx_t * trx);
-error_t ra02_async_recv_stop(trx_t * trx);
-error_t ra02_async_get_pkt(trx_t * trx, uint8_t * buf, size_t * size);
 
 #ifdef __cplusplus
 }

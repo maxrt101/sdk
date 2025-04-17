@@ -73,9 +73,6 @@ typedef struct trx_fn_s {
   error_t (*irq_handler)(trx_t * trx);
   error_t (*send)(trx_t * trx, uint8_t * buf, size_t size);
   error_t (*recv)(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
-  error_t (*async_recv)(trx_t * trx);
-  error_t (*async_recv_stop)(trx_t * trx);
-  error_t (*async_get_pkt)(trx_t * trx, uint8_t * buffer, size_t * size);
 } trx_fn_t;
 
 /**
@@ -287,44 +284,6 @@ __STATIC_FORCEINLINE error_t trx_send(trx_t * trx, uint8_t * buf, size_t size) {
 __STATIC_FORCEINLINE error_t trx_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout) {
   ASSERT_RETURN(trx && buf && size, E_NULL);
   return trx->fn.recv(trx, buf, size, timeout);
-}
-
-/**
- * Asynchronously receives data from trx
- *
- * @note trx->fn must be filled
- *
- * @param[in] trx TRX API handle
- */
-__STATIC_FORCEINLINE error_t trx_async_recv(trx_t * trx) {
-  ASSERT_RETURN(trx, E_NULL);
-  return trx->fn.async_recv(trx);
-}
-
-/**
- * Stops trx_recv_async process
- *
- * @note trx->fn must be filled
- *
- * @param[in] trx TRX API handle
- */
-__STATIC_FORCEINLINE error_t trx_async_recv_stop(trx_t * trx) {
-  ASSERT_RETURN(trx, E_NULL);
-  return trx->fn.async_recv_stop(trx);
-}
-
-/**
- * If packet was received in queue, give it back
- *
- * @note trx->fn must be filled
- *
- * @param[in]     trx TRX API handle
- * @param[out]    buf Buffer to send
- * @param[in/out] size Takes buffer size, write actual received size
- */
-__STATIC_FORCEINLINE error_t trx_async_get_pkt(trx_t * trx, uint8_t * buf, size_t * size) {
-  ASSERT_RETURN(trx && buf && size, E_NULL);
-  return trx->fn.async_get_pkt(trx, buf, size);
 }
 
 

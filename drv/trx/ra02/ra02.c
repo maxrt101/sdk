@@ -104,9 +104,6 @@ trx_fn_t TRX_RA02_FN = {
     .irq_handler = ra02_irq_handler,
     .send = ra02_send,
     .recv = ra02_recv,
-    .async_recv = ra02_async_recv,
-    .async_recv_stop = ra02_async_recv_stop,
-    .async_get_pkt = ra02_async_get_pkt,
 };
 
 /**
@@ -258,20 +255,6 @@ static error_t ra02_set_sf(trx_t * trx, uint8_t sf) {
   return ra02_write_reg(trx, RA02_LORA_REG_MODEM_CFG_2, (sf << 4) | data);
 }
 
-/**
- * Allocates free packet buffer for async recv queue to use
- */
-static ra02_trx_packet_t * ra02_alloc_packet(trx_t * trx) {
-  for (uint8_t i = 0; i < TRX_QUEUE_SIZE; ++i) {
-    if (!trx->ra02.async.packets[i].used) {
-      trx->ra02.async.packets[i].used = true;
-      return &trx->ra02.async.packets[i];
-    }
-  }
-
-  return NULL;
-}
-
 /* Shared functions ========================================================= */
 error_t trx_ra02_init(trx_t * trx) {
   ASSERT_RETURN(trx, E_NULL);
@@ -283,13 +266,6 @@ error_t ra02_init(trx_t * trx, trx_cfg_t * cfg) {
   trx->ra02.spi         = cfg->ra02.spi;
   trx->ra02.reset       = cfg->ra02.reset;
   trx->ra02.irq_flags   = 0;
-  trx->ra02.async.state = RA02_ASYNC_STATE_NONE;
-
-  // FIXME: Remove? (at least pin/port for GPIO isn't portable)
-  log_debug("ra02_init: spi=%x spi.cs=(%x, %x) reset=(%x, %x)",
-           trx->ra02.spi,
-           trx->ra02.spi->cs.port, trx->ra02.spi->cs.pin,
-           trx->ra02.reset.port, trx->ra02.reset.pin);
 
   ra02_reset(trx);
 
@@ -474,117 +450,3 @@ error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout
     }
   }
 }
-
-error_t ra02_async_recv(trx_t * trx) {
-  error_t err = E_AGAIN;
-
-  switch (trx->ra02.async.state) {
-    case RA02_ASYNC_STATE_NONE: {
-      memset(trx->ra02.async.packets, 0, sizeof(ra02_trx_packet_t) * TRX_QUEUE_SIZE);
-      queue_init(
-          &trx->ra02.async.queue.handle,
-          trx->ra02.async.queue.elements,
-          TRX_QUEUE_SIZE
-      );
-      trx->ra02.async.state = RA02_ASYNC_STATE_INIT;
-      break;
-    }
-
-    case RA02_ASYNC_STATE_INIT: {
-      trx->ra02.irq_flags = 0;
-
-      ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_STANDBY));
-
-      ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_DIO_MAP_1,
-                                        RA02_LORA_MAP_DIO_0(RA02_LORA_DIO_0_RX_DONE)));
-
-      ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_RX_SINGLE));
-
-      timeout_start(&trx->ra02.async.timeout, TRX_ASYNC_TIMEOUT_MS);
-
-      trx->ra02.async.state = RA02_ASYNC_STATE_RECV;
-      break;
-    }
-
-    case RA02_ASYNC_STATE_RECV: {
-      if (timeout_is_expired(&trx->ra02.async.timeout)) {
-        trx->ra02.async.state = RA02_ASYNC_STATE_INIT;
-        err = E_AGAIN;
-        break;
-      }
-
-      if (trx->ra02.irq_flags & RA02_LORA_IRQ_FLAGS_RX_DONE) {
-        uint8_t data;
-
-        ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_STANDBY));
-
-        ra02_trx_packet_t * packet = ra02_alloc_packet(trx);
-
-        if (!packet) {
-          ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
-          err = E_NOMEM;
-          break;
-        }
-
-        /* Read received size */
-        ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_LORA_REG_RX_NB_BYTES, &packet->size));
-
-        if (packet->size > TRX_MAX_PACKET_SIZE) {
-          packet->size = TRX_MAX_PACKET_SIZE;
-        }
-
-        ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_LORA_REG_FIFO_RX_CURRENT_ADDR, &data));
-        ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_LORA_REG_FIFO_ADDR_PTR, data));
-
-        for (size_t i = 0; i < packet->size; ++i) {
-          ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_REG_FIFO, &packet->data[i]));
-        }
-
-        ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
-
-        ERROR_CHECK_RETURN(queue_push(&trx->ra02.async.queue.handle, packet));
-
-        trx->ra02.async.state = RA02_ASYNC_STATE_INIT;
-
-        err = E_OK;
-
-        break;
-      }
-
-      break;
-    }
-
-    default: {
-      trx->ra02.async.state = RA02_ASYNC_STATE_NONE;
-      err = E_INVAL;
-      break;
-    }
-  }
-
-  return err;
-}
-
-error_t ra02_async_recv_stop(trx_t * trx) {
-  ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_STANDBY));
-  trx->ra02.async.state = RA02_ASYNC_STATE_NONE;
-  ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
-  return E_OK;
-}
-
-error_t ra02_async_get_pkt(trx_t * trx, uint8_t * buf, size_t * size) {
-  if (queue_size(&trx->ra02.async.queue.handle) > 0) {
-    ra02_trx_packet_t * packet;
-
-    ERROR_CHECK_RETURN(queue_pop(&trx->ra02.async.queue.handle, (void **) &packet));
-
-    if (packet) {
-      memcpy(buf, packet->data, packet->size);
-      *size = packet->size;
-      packet->used = false;
-      return E_OK;
-    }
-  }
-
-  return E_EMPTY;
-}
-
