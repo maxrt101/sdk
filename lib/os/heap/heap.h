@@ -43,8 +43,9 @@ typedef struct {
   os_heap_block_t * root_block;
 
   /** Heap metadata */
-  size_t size;
   uint8_t * start;
+  size_t size;
+  size_t used;
 } os_heap_t;
 
 /* Variables ================================================================ */

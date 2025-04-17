@@ -32,6 +32,11 @@ extern "C" {
 error_t os_use_heap(os_heap_t * heap);
 
 /**
+ * Returns internal OS heap
+ */
+os_heap_t * os_get_heap(void);
+
+/**
  * Allocates memory from internal OS heap
  *
  * @param size Size of allocation

@@ -156,12 +156,18 @@ void * os_heap_alloc(os_heap_t * heap, size_t size) {
   }
 #endif
 
+  if (result) {
+    heap->used += size;
+  }
+
   return result;
 }
 
 error_t os_heap_free(os_heap_t * heap, void * ptr) {
   ASSERT_RETURN(heap, E_NULL);
   ASSERT_RETURN(ptr, E_INVAL);
+
+  size_t size = ((os_heap_block_t *)((uint8_t*) ptr - sizeof(os_heap_block_t)))->size;
 
   error_t err = os_heap_free_impl(heap->root_block, ptr);
 
@@ -170,6 +176,10 @@ error_t os_heap_free(os_heap_t * heap, void * ptr) {
     err = os_heap_defrag(heap);
   }
 #endif
+
+  if (err == E_OK) {
+    heap->used -= size;
+  }
 
   return err;
 }

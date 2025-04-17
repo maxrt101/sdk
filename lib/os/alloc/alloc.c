@@ -26,6 +26,10 @@ error_t os_use_heap(os_heap_t * heap) {
   return E_OK;
 }
 
+os_heap_t * os_get_heap(void) {
+  return os_heap;
+}
+
 void * os_alloc(size_t size) {
   return os_heap_alloc(os_heap, size);
 }
