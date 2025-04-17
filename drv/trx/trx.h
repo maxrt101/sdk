@@ -63,7 +63,8 @@ typedef struct trx_fn_s {
   error_t (*reset)(trx_t * trx);
   error_t (*sleep)(trx_t * trx);
   error_t (*set_freq)(trx_t * trx, uint32_t khz);
-  error_t (*set_power)(trx_t * trx, uint8_t db);
+  error_t (*get_power)(trx_t * trx, int8_t * db);
+  error_t (*set_power)(trx_t * trx, int8_t db);
   error_t (*set_sync_word)(trx_t * trx, uint32_t sync_word);
   error_t (*set_baudrate)(trx_t * trx, uint32_t baudrate);
   error_t (*set_bandwidth)(trx_t * trx, uint32_t bandwidth);
@@ -156,6 +157,19 @@ __STATIC_FORCEINLINE error_t trx_set_freq(trx_t * trx, uint32_t khz) {
 }
 
 /**
+ * Gets output power
+ *
+ * @note trx->fn must be filled
+ *
+ * @param[in] trx TRX API handle
+ * @param[in] db  Pointer to result
+ */
+__STATIC_FORCEINLINE error_t trx_get_power(trx_t * trx, int8_t * db) {
+  ASSERT_RETURN(trx, E_NULL);
+  return trx->fn.get_power(trx, db);
+}
+
+/**
  * Sets output power
  *
  * @note trx->fn must be filled
@@ -163,7 +177,7 @@ __STATIC_FORCEINLINE error_t trx_set_freq(trx_t * trx, uint32_t khz) {
  * @param[in] trx TRX API handle
  * @param[in] db  Power in decibels
  */
-__STATIC_FORCEINLINE error_t trx_set_power(trx_t * trx, uint8_t db) {
+__STATIC_FORCEINLINE error_t trx_set_power(trx_t * trx, int8_t db) {
   ASSERT_RETURN(trx, E_NULL);
   return trx->fn.set_power(trx, db);
 }

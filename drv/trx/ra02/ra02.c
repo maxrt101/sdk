@@ -20,6 +20,9 @@
 /* Defines ================================================================== */
 #define LOG_TAG RA02
 
+/** Internal constants */
+#define RA02_MAX_PA           20
+
 /** Default internal trx configuration parameters */
 #define RA02_DEFAULT_CRC_RATE RA02_CRC_RATE_4_7 /* CRC Rate */
 #define RA02_DEFAULT_SF       8                 /* Spreading Factor */
@@ -91,6 +94,7 @@ trx_fn_t TRX_RA02_FN = {
     .reset = ra02_reset,
     .sleep = ra02_sleep,
     .set_freq = ra02_set_freq,
+    .get_power = ra02_get_power,
     .set_power = ra02_set_power,
     .set_sync_word = ra02_set_sync_word,
     .set_baudrate = ra02_set_baudrate,
@@ -343,7 +347,14 @@ error_t ra02_set_freq(trx_t * trx, uint32_t khz) {
   return E_OK;
 }
 
-error_t ra02_set_power(trx_t * trx, uint8_t db) {
+error_t ra02_get_power(trx_t * trx, int8_t * db) {
+  return ra02_read_reg(trx, RA02_REG_PA_CFG, db);
+}
+
+error_t ra02_set_power(trx_t * trx, int8_t db) {
+  if (db < 0 || db > RA02_MAX_PA) {
+    return E_INVAL;
+  }
   UTIL_MAP_RANGE_TABLE(ra02_power_mapping_db, db, db);
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_PA_CFG, db));
   sleep_ms(10);
