@@ -25,6 +25,13 @@ extern "C" {
 
 /* Defines ================================================================== */
 /**
+ * Max size of log line
+ */
+#ifndef LOG_LINE_SIZE
+#define LOG_LINE_SIZE 192
+#endif
+
+/**
  * Helper macros to check for LOG_TAG presence
  */
 #define LOG_TAG_CHECK_LOG_TAG 0

@@ -15,7 +15,6 @@
 
 /* Defines ================================================================== */
 #define LINE_ENDING   "\r\n"
-#define LINE_BUF_SIZE 192
 
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
@@ -84,32 +83,36 @@ log_level_t log_level_from_str(const char * str) {
 }
 
 void vlog_fmt(log_level_t level, const char * fmt, va_list args) {
-  char buf[LINE_BUF_SIZE];
+  char buf[LOG_LINE_SIZE];
   size_t size = 0;
 
-  size += snprintf(buf + size, sizeof(buf) - size, "[%s%s%s] ",
+  size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] ",
                    log_get_level_color(level),
                    log_get_level_string(level),
                    USE_COLOR_LOG ? COLOR_RESET : "");
-  size += vsnprintf(buf + size, sizeof(buf) - size, fmt, args);
-  size += snprintf(buf + size, sizeof(buf) - size, LINE_ENDING);
+  size += vsnprintf(buf + size, sizeof(buf) - size - 1, fmt, args);
+  size += snprintf(buf + size, sizeof(buf) - size - 1, LINE_ENDING);
+
+  buf[size] = 0;
 
   log_write((const uint8_t *) buf, size);
 }
 
 void vlog_module_fmt(log_level_t level, const char * tag, const char * fmt, va_list args) {
-  char buf[LINE_BUF_SIZE];
+  char buf[LOG_LINE_SIZE];
   size_t size = 0;
 
-  size += snprintf(buf + size, sizeof(buf) - size, "[%s%s%s] [%s%s%s] ",
+  size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] [%s%s%s] ",
                    log_get_level_color(level),
                    log_get_level_string(level),
                    USE_COLOR_LOG ? COLOR_RESET : "",
                    USE_COLOR_LOG ? COLOR_MAGENTA : "",
                    tag,
                    USE_COLOR_LOG ? COLOR_RESET : "");
-  size += vsnprintf(buf + size, sizeof(buf) - size, fmt, args);
-  size += snprintf(buf + size, sizeof(buf) - size, LINE_ENDING);
+  size += vsnprintf(buf + size, sizeof(buf) - size - 1, fmt, args);
+  size += snprintf(buf + size, sizeof(buf) - size - 1, LINE_ENDING);
+
+  buf[size] = 0;
 
   log_write((const uint8_t *) buf, size);
 }
@@ -129,12 +132,14 @@ void log_module_fmt(log_level_t level, const char * tag, const char * fmt, ...) 
 }
 
 void log_printf(const char * fmt, ...) {
-  char buf[LINE_BUF_SIZE];
+  char buf[LOG_LINE_SIZE];
 
   va_list args;
   va_start(args, fmt);
-  size_t size = vsnprintf(buf, sizeof(buf), fmt, args);
+  size_t size = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
   va_end(args);
+
+  buf[size] = 0;
 
   vfs_write(log_file, buf, size);
 }
