@@ -591,7 +591,13 @@ error_t vfs_path_remove_suffix(char * path, uint8_t count) {
 error_t vfs_path_parent(char * path) {
   ASSERT_RETURN(path, E_NULL);
 
-  return vfs_path_remove_suffix(path, 1);
+  ERROR_CHECK_RETURN(vfs_path_remove_suffix(path, 1));
+
+  if (!strlen(path)) {
+    memcpy(path, "/", 2);
+  }
+
+  return E_OK;
 }
 
 error_t vfs_path_name(char * path) {
@@ -938,9 +944,7 @@ error_t vfs_write(vfs_file_t * file, const uint8_t * buffer, size_t size) {
       size_t write_size = UTIL_MIN(file->file.data.capacity - file->file.data.offset, size);
       void * res = memcpy(file->file.data.buffer + file->file.data.offset, buffer, write_size);
       file->file.data.offset += write_size;
-      // TODO: Check
-      log_debug("write ofs=%d size=%d wr_size=%d", file->file.data.offset, file->file.data.size, write_size);
-      file->file.data.size = UTIL_MAX(file->file.data.size, file->file.data.offset + write_size);
+      file->file.data.size += write_size;
       return res == file->file.data.buffer + file->file.data.offset - write_size ? E_OK : E_FAILED;
     }
 

@@ -24,7 +24,7 @@ __STATIC_INLINE table_node_t * table_find_node(table_t * table, table_hash_t has
 
   table_node_t * node = &table->nodes[hash % table->capacity];
 
-  for (size_t i = 0; i < table->capacity - table->size; ++i) {
+  for (size_t i = 0; i < table->capacity; ++i) {
     if (node->used && node->hash == hash) {
       return node;
     }
@@ -64,7 +64,7 @@ error_t table_add(table_t * table, table_hash_t hash, void * value) {
 
   table_node_t * node = &table->nodes[hash % table->capacity];
 
-  for (size_t i = 0; i < table->capacity - table->size; ++i) {
+  for (size_t i = 0; i < table->capacity; ++i) {
     if (!node->used) {
       node->hash = hash;
       node->value = value;
