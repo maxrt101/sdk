@@ -59,7 +59,7 @@ extern "C" {
  * Max variable count
  */
 #ifndef SHELL_VAR_BUFFER_SIZE
-#define SHELL_VAR_BUFFER_SIZE   8
+#define SHELL_VAR_BUFFER_SIZE   4
 #endif
 
 /**
