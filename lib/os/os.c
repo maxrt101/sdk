@@ -99,6 +99,14 @@
   )
 #endif
 
+/**
+ * Check stack magic
+ *
+ * @param __addr Address onto the stack. 4 bytes aligned
+ */
+#define CHECK_MAGIC(__addr)                   \
+  (*((uint32_t *) __addr) == OS_STACK_MAGIC)
+
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 /**
@@ -191,6 +199,8 @@ void os_task_create(
   task->stack.end = stack + stack_size;
   task->fn = fn;
   task->arg = arg;
+
+  UTIL_IF_1(OS_TRACE_TASK_STACK, task->stack.last_sp = task->stack.end);
 
   os_task_start(task);
 }
@@ -295,9 +305,22 @@ void os_schedule(void) {
     os.task.current->name, os_task_state_to_str(os.task.current->state));
 
 #if USE_OS_STACK_CHECK
-  // Check stask overflow
-  if (*((uint32_t *) os.task.current->stack.start) != OS_STACK_MAGIC) {
+  // Check stack overflow
+  if (!CHECK_MAGIC(os.task.current->stack.start)) {
     os_abort("Stack overflow (task %p '%s')", os.task.current, os.task.current->name);
+  }
+#endif
+
+#if OS_TRACE_TASK_STACK
+  if (os.cycles % OS_TRACE_TASK_STACK_CYCLES == 0) {
+    if (!CHECK_MAGIC(os.task.current->stack.last_sp)) {
+      for (uint32_t * sp = os.task.current->stack.start; sp < (uint32_t *) os.task.current->stack.end; ++sp) {
+        if (*sp != OS_STACK_MAGIC) {
+          os.task.current->stack.last_sp = sp-1;
+          break;
+        }
+      }
+    }
   }
 #endif
 
@@ -456,6 +479,18 @@ bool os_task_iter(os_task_t ** task) {
     *task = os.task.head;
     return true;
   }
+}
+
+void os_task_stat(os_task_t * task, os_task_stat_t * stat) {
+  ASSERT_RETURN(task && stat);
+
+  stat->name       = task->name;
+  stat->state      = task->state;
+  stat->stack_size = (uint8_t *) task->stack.end - (uint8_t *) task->stack.start;
+
+#if OS_TRACE_TASK_STACK
+  stat->stack_used = (uint8_t *) task->stack.end - (uint8_t *) task->stack.last_sp;
+#endif
 }
 
 const char * os_task_state_to_str(os_task_state_t state) {

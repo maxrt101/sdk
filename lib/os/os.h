@@ -99,6 +99,21 @@ extern "C" {
 #endif
 
 /**
+ * If enabled - will trance stack usage for each task
+ */
+#ifndef OS_TRACE_TASK_STACK
+#define OS_TRACE_TASK_STACK                   1
+#endif
+
+/**
+ * Period in cycles, how often check stack usage
+ */
+#ifndef OS_TRACE_TASK_STACK_CYCLES
+#define OS_TRACE_TASK_STACK_CYCLES            10
+#endif
+
+
+/**
  * If enabled, will log every scheduler cycle number and tick
  */
 #ifndef USE_OS_TRACE_CYCLE
@@ -248,6 +263,8 @@ typedef struct os_task_t {
   struct {
     void * start;
     void * end;
+
+    UTIL_IF_1(OS_TRACE_TASK_STACK, void * last_sp);
   } stack;
 
   void * arg;
@@ -259,13 +276,13 @@ typedef struct os_task_t {
 } os_task_t;
 
 /**
- * Task stat
- *
- * TODO: Implement os_task_stat
+ * Task stats
  */
 typedef struct {
-  os_task_state_t state;
+  const char * name;
+  size_t stack_size;
   size_t stack_used;
+  os_task_state_t state;
 } os_task_stat_t;
 
 /* Variables ================================================================ */
@@ -345,7 +362,26 @@ void os_task_pause(os_task_t * task);
  */
 void os_task_resume(os_task_t * task);
 
+/**
+ * Send signal to a task (will call signal handler)
+ *
+ * Signals themselves don't do anything, they are meant to signal tasks
+ * about pending changes
+ *
+ * @param task Task handle
+ * @param signal Signal type
+ */
 void os_signal(os_task_t * task, os_signal_t signal);
+
+/**
+ * Register signal handler for current task
+ *
+ * @note if signals_mask needs to be changed, but handler function does
+ * not - pass NULL as fn
+ *
+ * @param signals_mask Bitmask of signal types to subscribe to
+ * @param fn Handler function
+ */
 void os_signal_register_handler(uint8_t signals_mask, os_task_signal_handler_t fn);
 
 /**
@@ -395,6 +431,14 @@ __STATIC_INLINE void os_yield(void) {
  * @retval true if next task exists, false if not
  */
 bool os_task_iter(os_task_t ** task);
+
+/**
+ * Retrieve task statistics
+ *
+ * @param[in] task Task handle
+ * @param[out] stat Task stats
+ */
+void os_task_stat(os_task_t * task, os_task_stat_t * stat);
 
 /**
  * Converts os_task_state_t enum value to it's string representation
