@@ -102,6 +102,14 @@ size_t queue_size(queue_t * q);
 error_t queue_push(queue_t * q, queue_element_t data);
 
 /**
+ * Push element into the queue start
+ *
+ * @param q Queue handle
+ * @param data Element to push
+ */
+error_t queue_push_front(queue_t * q, queue_element_t data);
+
+/**
  * Pop element from the queue (reads data from buf[tail] and increases tail)
  *
  * @param q Queue handle

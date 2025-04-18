@@ -73,6 +73,29 @@ error_t queue_push(queue_t * q, queue_element_t data) {
   return E_OK;
 }
 
+error_t queue_push_front(queue_t * q, queue_element_t data) {
+  ASSERT_RETURN(q, E_NULL);
+
+  size_t next_tail = q->tail;
+
+  if (next_tail == 0) {
+    next_tail = q->capacity - 1;
+  } else {
+    next_tail -= 1;
+  }
+
+  if (next_tail == q->head) {
+    return E_OVERFLOW;
+  }
+
+  q->size += 1;
+
+  q->tail = next_tail;
+  q->elements[q->tail] = data;
+
+  return E_OK;
+}
+
 error_t queue_pop(queue_t * q, queue_element_t * data) {
   ASSERT_RETURN(q && data, E_NULL);
 
