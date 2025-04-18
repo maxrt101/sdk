@@ -37,14 +37,27 @@ extern "C" {
 #include "util/vargs.h"
 
 /* Defines ================================================================== */
+/**
+ * Marks indefinite repat
+ */
+#define LED_REPEAT_INDEFINITELY 0xFFFF
+
 /* Macros =================================================================== */
 /**
  * Constructs variable name for pattern context
  *
  * @param name Pattern name
  */
+#define LED_PATTERN_NAME(name) \
+  UTIL_CAT(name, _led_pattern)
+
+/**
+ * Returns pointer to pattern
+ *
+ * @param name Pattern name
+ */
 #define LED_PATTERN(name) \
-    UTIL_CAT(name, _led_pattern)
+    &LED_PATTERN_NAME(name)
 
 /**
  * Construct variable name for pattern commands array
@@ -60,7 +73,7 @@ extern "C" {
  * @param name Pattern name
  */
 #define LED_DECLARE_PATTERN(name) \
-    extern led_pattern_t LED_PATTERN(name)
+    extern led_pattern_t LED_PATTERN_NAME(name)
 
 /**
  * Defines pattern (for sources)
@@ -70,7 +83,7 @@ extern "C" {
  */
 #define LED_DEFINE_PATTERN(name, ...)                       \
     uint16_t LED_PATTERN_COMMANDS(name)[] = {__VA_ARGS__};  \
-    led_pattern_t LED_PATTERN(name) = {                     \
+    led_pattern_t LED_PATTERN_NAME(name) = {                \
       LED_PATTERN_COMMANDS(name),                           \
       UTIL_ARR_SIZE(LED_PATTERN_COMMANDS(name))             \
     }
@@ -111,17 +124,20 @@ typedef struct {
  * LED Context
  */
 typedef struct led_s {
-  gpio_ctx_t      gpio;     /** LED GPIO Context */
-  pwm_t           pwm;      /** PWM For this LED */
+  gpio_ctx_t      gpio;         /** LED GPIO Context */
+  pwm_t           pwm;          /** PWM For this LED */
 
-  led_state_t     state;    /** LED state machine state */
-  led_pattern_t * pattern;  /** Current LED pattern */
-  queue_t *       queue;    /** Queue for patterns */
+  led_state_t     state;        /** LED state machine state */
+  led_pattern_t * pattern;      /** Current LED pattern */
+  queue_t *       queue;        /** Queue for patterns */
+
+  bool            allow_repeat; /** Allows repeat command in pattens */
 
   /**
    * Context needed for pattern displaying
    */
   struct {
+    uint8_t         repeat_count;    /** Counter of repeats */
     uint8_t         action_idx;      /** Index into pattern buffer */
     timeout_t       command_timeout; /** Timeout till end of command duration */
     milliseconds_t  last_runtime;    /** Runtime on last call */
@@ -177,12 +193,20 @@ error_t led_on(led_t * led);
 error_t led_off(led_t * led);
 
 /**
- * Sets pattern to execute
+ * Sets pattern to execute next
  *
  * @param[in] led LED Context
  * @param[in] pattern LED pattern pointer
  */
 error_t led_schedule(led_t * led, led_pattern_t * pattern);
+
+/**
+ * Sets pattern to execute now (saving current pattern)
+ *
+ * @param[in] led LED Context
+ * @param[in] pattern LED pattern pointer
+ */
+error_t led_preempt(led_t * led, led_pattern_t * pattern);
 
 /**
  * Stops current led pattern
@@ -211,6 +235,14 @@ error_t led_run(led_t * led);
  * @param[in] led LED Context
  */
 error_t led_run_async(led_t * led);
+
+/**
+ * Allow/disallow repeat command in patterns
+ *
+ * @param[in] led LED Context
+ * @param[in] allow Allow flag
+ */
+error_t led_allow_repeat(led_t * led, bool allow);
 
 #ifdef __cplusplus
 }

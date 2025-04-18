@@ -10,6 +10,7 @@
 #include "led/led.h"
 #include "error/assertion.h"
 
+
 /* Defines ================================================================== */
 #define LOG_TAG             LED
 #define LED_ACTION_END_MARK ((uint16_t) -1)
@@ -131,8 +132,16 @@ __STATIC_INLINE error_t led_parse_command(led_t * led) {
     }
 
     case LED_REPEAT: {
-      led->state = LED_STATE_READY;
-      led->action_idx = 0;
+      uint16_t repeats = led_get_next(led);
+
+      if (led->repeat_count < repeats - 1 || (led->allow_repeat && repeats == LED_REPEAT_INDEFINITELY)) {
+        led->state = LED_STATE_READY;
+        led->action_idx = 0;
+        led->repeat_count++;
+      } else {
+        led->pattern = NULL;
+        led->state = LED_STATE_IDLE;
+      }
       break;
     }
 
@@ -156,7 +165,10 @@ error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * q
 
   gpio_ctx_init(&led->gpio, gpio, polarity);
   pwm_init(&led->pwm, &led->gpio);
-  led->queue = queue;
+  led->queue        = queue;
+  led->allow_repeat = true;
+  led->repeat_count = 0;
+  led->action_idx   = 0;
 
   return E_OK;
 }
@@ -177,7 +189,19 @@ error_t led_schedule(led_t * led, led_pattern_t * pattern) {
   ASSERT_RETURN(led && pattern, E_NULL);
 
   ERROR_CHECK_RETURN(queue_push(led->queue, pattern));
+
+  return E_OK;
+}
+
+error_t led_preempt(led_t * led, led_pattern_t * pattern) {
+  ASSERT_RETURN(led && pattern, E_NULL);
+
+  queue_push_front(led->queue, led->pattern);
+  led->pattern = pattern;
+  led->state = LED_STATE_READY;
   led->action_idx = 0;
+  led->repeat_count = 0;
+  led_off(led);
 
   return E_OK;
 }
@@ -199,11 +223,11 @@ error_t led_flush(led_t * led) {
 }
 
 error_t led_run(led_t * led) {
-  ASSERT_RETURN(led && led->pattern, E_NULL);
+  ASSERT_RETURN(led, E_NULL);
 
-  while (led->state != LED_STATE_IDLE) {
-    ERROR_CHECK_RETURN(led_run_async(led));
-  }
+  do {
+    led_run_async(led);
+  } while (led->pattern || queue_size(led->queue));
 
   return E_OK;
 }
@@ -283,12 +307,22 @@ error_t led_run_async(led_t * led) {
         ERROR_CHECK_RETURN(queue_pop(led->queue, (queue_element_t *) &led->pattern));
         led->state = LED_STATE_READY;
       }
+      led->repeat_count = 0;
+      led->action_idx = 0;
       return E_AGAIN;
 
     default:
       led->state = LED_STATE_IDLE;
       return E_INVAL;
   }
+
+  return E_OK;
+}
+
+error_t led_allow_repeat(led_t * led, bool allow) {
+  ASSERT_RETURN(led, E_NULL);
+
+  led->allow_repeat = allow;
 
   return E_OK;
 }
