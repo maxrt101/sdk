@@ -17,6 +17,10 @@
 #include "wdt/wdt.h"
 #endif
 
+#if OS_USE_SOFT_WDT
+#include "swdg/soft_wdt.h"
+#endif
+
 /* Defines ================================================================== */
 #define LOG_TAG OS
 
@@ -274,6 +278,8 @@ void os_launch(void) {
         longjmp(os.task.current->ctx.buf, 1);
       }
     }
+
+    UTIL_IF_1(OS_USE_SOFT_WDT, soft_wdt_check());
 
     // Advance current task to the next in the task list
     os_task_next();

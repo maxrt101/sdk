@@ -84,8 +84,18 @@ extern "C" {
 #define OS_SLEEP_MODE                         OS_POWER_MODE_FAST_SLEEP
 #endif
 
+/**
+ * If enabled - will call wdt_feed on each cycle
+ */
 #ifndef OS_WDT_AUTOFEED
 #define OS_WDT_AUTOFEED                       1
+#endif
+
+/**
+ * If enabled - will call soft_wdt_check on each cycle
+ */
+#ifndef OS_USE_SOFT_WDT
+#define OS_USE_SOFT_WDT                       0
 #endif
 
 /**
