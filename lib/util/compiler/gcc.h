@@ -21,8 +21,24 @@ extern "C" {
 #endif
 
 /* Defines ================================================================== */
+#ifndef __STATIC
+#define __STATIC static
+#endif
+
+#ifndef __INLINE
+#define __INLINE static
+#endif
+
 #ifndef __STATIC_INLINE
 #define __STATIC_INLINE static inline
+#endif
+
+#ifndef __STATIC_FORCEINLINE
+#define __STATIC_FORCEINLINE __attribute__((always_inline)) static inline
+#endif
+
+#ifndef __PACKED
+#define __PACKED __attribute__((packed))
 #endif
 
 #ifndef __PACKED_STRUCT
@@ -35,6 +51,10 @@ extern "C" {
 
 #ifndef __PACKED_ENUM
 #define __PACKED_ENUM enum __attribute__((packed))
+#endif
+
+#ifndef __WEAK
+#define __WEAK __attribute__((weak))
 #endif
 
 #ifndef __NAKED
@@ -54,11 +74,15 @@ extern "C" {
 #endif
 
 #ifndef __OPTIMIZE
-#define __OPTIMIZE(n) __attribute__((optimize(n)))
+#define __OPTIMIZE(N) __attribute__((optimize(STRINGIFY(O##N))))
 #endif
 
 #ifndef __UNUSED
 #define __UNUSED __attribute__((unused))
+#endif
+
+#ifndef __UNREACHABLE
+#define __UNREACHABLE() __builtin_unreachable()
 #endif
 
 #ifndef __ALIAS
@@ -67,10 +91,6 @@ extern "C" {
 
 #ifndef __ALIGN
 #define __ALIGN(n) __attribute__((aligned(n)))
-#endif
-
-#ifndef __PACKED_ENUM
-#define __PACKED_ENUM enum __PACKED
 #endif
 
 #ifndef __LOCATION
@@ -97,8 +117,16 @@ extern "C" {
 #define __STATIC_ASSERT(__expr, __msg) _Static_assert(__expr, __msg)
 #endif
 
+#ifndef __NON_NULL
+#define __NON_NULL(...) __attribute__((__nonnull__ __VA_ARGS__))
+#endif
+
 #ifndef __NO_INLINE
 #define __NO_INLINE __attribute__((noinline))
+#endif
+
+#ifndef __NORETURN
+#define __NORETURN __attribute__((noreturn))
 #endif
 
 /* Macros =================================================================== */
