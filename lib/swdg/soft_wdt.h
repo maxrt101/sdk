@@ -38,7 +38,7 @@ typedef enum {
  * @param timeout Timeout
  * @param action Bitmask of actions to perform
  */
-void soft_wdt_init(milliseconds_t timeout, uint8_t action);
+void soft_wdt_init(milliseconds_t timeout, uint8_t action, void * ctx);
 
 /**
  * Reload WatchDogTimer timeout
@@ -54,7 +54,7 @@ void soft_wdt_check(void);
 /**
  * Called when timeout expired
  */
-void soft_wdt_on_timeout(void);
+void soft_wdt_on_timeout(void * ctx);
 
 #ifdef __cplusplus
 }

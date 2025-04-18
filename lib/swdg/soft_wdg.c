@@ -22,13 +22,14 @@
 /* Variables ================================================================ */
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
-void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * label) {
+void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * label, void * ctx) {
   ASSERT_RETURN(wdg);
 
-  wdg->label = label;
-  wdg->max = max;
-  wdg->action = action;
-  wdg->counter = 0;
+  wdg->label    = label;
+  wdg->ctx      = ctx;
+  wdg->max      = max;
+  wdg->action   = action;
+  wdg->counter  = 0;
 }
 
 void soft_wdg_inc(soft_wdg_t * wdg) {

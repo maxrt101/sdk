@@ -26,7 +26,7 @@ typedef enum {
   SWDG_ACTION_NOTIFY       = (1 << 3),
   SWDG_ACTION_LOG          = (1 << 4),
 
-  SWDT_ACTION_DEFAULT      = SWDG_ACTION_REBOOT_WDT | SWDG_ACTION_NOTIFY | SWDG_ACTION_LOG,
+  SWDG_ACTION_DEFAULT      = SWDG_ACTION_REBOOT_WDT | SWDG_ACTION_NOTIFY | SWDG_ACTION_LOG,
 } soft_wdg_action_t;
 
 /* Types ==================================================================== */
@@ -35,6 +35,7 @@ typedef enum {
  */
 typedef struct {
   const char * label;
+  void * ctx;
   uint32_t counter;
   uint32_t max;
   uint8_t action;
@@ -49,7 +50,7 @@ typedef struct {
  * @param max Max value, that counter can reach before being considered expired
  * @param action Bitmask of actions to perform
  */
-void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * label);
+void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * label, void * ctx);
 
 /**
  * Update WatchDog counter

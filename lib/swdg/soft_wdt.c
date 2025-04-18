@@ -24,15 +24,17 @@
  * Software WatchDogTimer Context
  */
 static struct {
+  void * ctx;
   timeout_t timeout;
   uint8_t action;
 } soft_wdt;
 
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
-void soft_wdt_init(milliseconds_t timeout, uint8_t action) {
+void soft_wdt_init(milliseconds_t timeout, uint8_t action, void * ctx) {
   timeout_start(&soft_wdt.timeout, timeout);
   soft_wdt.action = action;
+  soft_wdt.ctx    = ctx;
 }
 
 void soft_wdt_feed(void) {
@@ -46,7 +48,7 @@ void soft_wdt_check(void) {
     }
 
     if (soft_wdt.action & SWDT_ACTION_NOTIFY) {
-      soft_wdt_on_timeout();
+      soft_wdt_on_timeout(soft_wdt.ctx);
     }
 
     if (soft_wdt.action & SWDT_ACTION_REBOOT_WDT) {
@@ -63,6 +65,6 @@ void soft_wdt_check(void) {
   }
 }
 
-__WEAK void soft_wdt_on_timeout(void) {
+__WEAK void soft_wdt_on_timeout(void * ctx) {
   // Does nothing
 }
