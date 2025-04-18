@@ -26,6 +26,14 @@
 /* Private functions ======================================================== */
 extern void shell_parse(shell_t * ctx);
 
+__STATIC_INLINE void shell_reset_buffers(shell_t * ctx) {
+  memset(ctx->line.buf, 0, sizeof(ctx->line.buf));
+  ctx->line.size = 0;
+
+  memset(ctx->ptr.buf, 0, sizeof(ctx->ptr.buf));
+  ctx->ptr.size = 0;
+}
+
 /**
  * Prints prompt, and already typed line
  */
@@ -113,9 +121,9 @@ error_t shell_start(shell_t * ctx) {
   ASSERT_RETURN(ctx, E_NULL);
 
   ctx->state = SHELL_STATE_RUNNING;
-  ctx->line.size = 0;
   ctx->internal_flags.is_new_line = true;
 
+  shell_reset_buffers(ctx);
   tty_reset(&ctx->tty);
 
   log_printf("%s shell v%s\r\n", PROJECT_NAME, PROJECT_VERSION);
@@ -168,6 +176,8 @@ error_t shell_process(shell_t * ctx) {
   int8_t result = SHELL_FAIL;
 
   shell_exec(ctx, &result);
+
+  shell_reset_buffers(ctx);
 
   return result == SHELL_OK ? E_OK : E_FAILED;
 }
