@@ -25,10 +25,10 @@ __NO_RETURN void os_abort(const char * msg, ...) {
   log_fatal("%s        SYSTEM ABORT        %s", COLOR_RED_BG, COLOR_RESET);
   vlog_fmt(LOG_FATAL, msg, args);
   va_end(args);
-  os_abort_dump_ctx();
+  os_on_abort();
   os_reset(OS_RESET_WDG);
 }
 
-__WEAK void os_abort_dump_ctx(void) {
+__WEAK void os_on_abort(void) {
   // Does nothing by default
 }

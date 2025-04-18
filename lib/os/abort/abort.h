@@ -28,9 +28,9 @@ extern "C" {
 __NO_RETURN void os_abort(const char * msg, ...);
 
 /**
- * Used defined callback to print abort context (like register states, etc.)
+ * Used defined callback to be called on abort before reset
  */
-void os_abort_dump_ctx(void);
+void os_on_abort(void);
 
 #ifdef __cplusplus
 }
