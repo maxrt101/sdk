@@ -59,6 +59,13 @@ void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * 
 void soft_wdg_inc(soft_wdg_t * wdg);
 
 /**
+ * Reset WatchDog counter
+ *
+ * @param wdg SoftWDG Context
+ */
+void soft_wdg_reset(soft_wdg_t * wdg);
+
+/**
  * Called when counter expired
  *
  * @param wdg SoftWDG Context

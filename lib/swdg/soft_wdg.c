@@ -34,6 +34,8 @@ void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * 
 void soft_wdg_inc(soft_wdg_t * wdg) {
   ASSERT_RETURN(wdg);
 
+  wdg->counter++;
+
   if (wdg->counter >= wdg->max) {
     if (wdg->action & SWDG_ACTION_LOG) {
       log_warn(wdg->label ? "Timeout expired for %s" : "Timeout expired", wdg->label);
@@ -55,6 +57,12 @@ void soft_wdg_inc(soft_wdg_t * wdg) {
       os_reset(OS_RESET_HARD);
     }
   }
+}
+
+void soft_wdg_reset(soft_wdg_t * wdg) {
+  ASSERT_RETURN(wdg);
+
+  wdg->counter = 0;
 }
 
 __WEAK void soft_wdg_on_timeout(soft_wdg_t * wdg) {
