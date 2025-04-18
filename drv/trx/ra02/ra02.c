@@ -15,7 +15,8 @@
 #include "drv/trx/trx.h"
 #include "time/sleep.h"
 #include "log/log.h"
-#include "spi.h"
+#include "wdt/wdt.h"
+#include "spi/spi.h"
 
 /* Defines ================================================================== */
 #define LOG_TAG RA02
@@ -448,5 +449,7 @@ error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout
       ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
       return E_OK;
     }
+
+    wdt_feed();
   }
 }
