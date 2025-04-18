@@ -56,7 +56,7 @@ error_t tty_line_from_buf(tty_line_t * line, const char * buf, size_t size) {
 error_t tty_set_flag(tty_t * tty, tty_flag_t flag) {
   ASSERT_RETURN(tty, E_NULL);
 
-  tty->flags &= flag;
+  tty->flags |= flag;
 
   return E_OK;
 }
