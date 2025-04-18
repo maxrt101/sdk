@@ -84,6 +84,10 @@ extern "C" {
 #define OS_SLEEP_MODE                         OS_POWER_MODE_FAST_SLEEP
 #endif
 
+#ifndef OS_WDT_AUTOFEED
+#define OS_WDT_AUTOFEED                       1
+#endif
+
 /**
  * If enabled, will log every scheduler cycle number and tick
  */

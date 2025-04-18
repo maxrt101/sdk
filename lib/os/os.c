@@ -13,6 +13,10 @@
 #include "os/power/power.h"
 #include "os.h"
 
+#if OS_WDT_AUTOFEED
+#include "wdt/wdt.h"
+#endif
+
 /* Defines ================================================================== */
 #define LOG_TAG OS
 
@@ -257,6 +261,8 @@ void os_launch(void) {
     if (os.task.current->state == OS_TASK_STATE_WAITING && timeout_is_expired(&os.task.current->wait_timeout)) {
       os.task.current->state = OS_TASK_STATE_READY;
     }
+
+    UTIL_IF_1(OS_WDT_AUTOFEED, wdt_feed());
 
     // If task is ready - switch to it
     if (os.task.current->state == OS_TASK_STATE_READY) {
