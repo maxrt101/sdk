@@ -130,6 +130,22 @@ extern "C" {
 
 /* Macros =================================================================== */
 /**
+ * Get (previously declared via OS_DECLARE_TASK) task handle from name
+ *
+ * @param __name Task name
+ */
+#define OS_TASK(__name) &UTIL_CAT(__name, _task)
+
+/**
+ * Declares (but not defines) a task handle, useful when a static task needs
+ * to be accessed
+ *
+ * @param __name Task name
+ */
+#define OS_DECLARE_TASK(__name)                                          \
+  extern os_task_t UTIL_CAT(__name, _task)
+
+/**
  * Creates task stack and handles, initializes handle
  *
  * @param __name        Task name. A string
@@ -147,7 +163,7 @@ extern "C" {
     .stack.end = UTIL_CAT(__name, _task_stack) + __stack_size,          \
     .fn = __fn,                                                         \
     .arg = __arg,                                                       \
-  };
+  }
 
 /**
  * Used internally to trace OS events
@@ -173,6 +189,19 @@ typedef enum {
   OS_TASK_STATE_EXITED    = 6,
 } os_task_state_t;
 
+/**
+ * Signal types
+ */
+typedef enum {
+  OS_SIGNAL_NONE          = 0,
+  OS_SIGNAL_USER          = (1 << 0),
+  OS_SIGNAL_PAUSE         = (1 << 1),
+  OS_SIGNAL_RESUME        = (1 << 2),
+  OS_SIGNAL_KILL          = (1 << 3),
+
+  OS_SIGNAL_ALL           = 0xFF
+} os_signal_t;
+
 /* Types ==================================================================== */
 /**
  * Task context - registers and whatnot, used by setjmp/longjmp
@@ -185,6 +214,11 @@ typedef union {
  * Task function
  */
 typedef void (*os_task_fn_t)(void *);
+
+/**
+ * Task signal handler function
+ */
+typedef void (*os_task_signal_handler_t)(os_signal_t signal, void *);
 
 /**
  * Task context used by os
@@ -202,9 +236,11 @@ typedef struct os_task_t {
     void * end;
   } stack;
 
-  os_task_fn_t fn;
   void * arg;
+  os_task_fn_t fn;
+  os_task_signal_handler_t sig;
 
+  uint8_t signals;
   timeout_t wait_timeout;
 } os_task_t;
 
@@ -294,6 +330,17 @@ void os_task_pause(os_task_t * task);
  * @param task Task handle to resume
  */
 void os_task_resume(os_task_t * task);
+
+void os_signal(os_task_t * task, os_signal_t signal);
+void os_signal_register_handler(uint8_t signals_mask, os_task_signal_handler_t fn);
+
+/**
+ * Returns true if task is not running (not initialized, paused or exited)
+ *
+ * @param task Task to check
+ * @return true if running, otherwise - false
+ */
+bool os_task_is_running(os_task_t * task);
 
 /**
  * Retrieves task by name from scheduler task list

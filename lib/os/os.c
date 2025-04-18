@@ -208,8 +208,7 @@ void os_launch(void) {
 
 #if USE_MAX_CYCLES
     if (os.cycles == MAX_CYCLES) {
-      register volatile uint32_t sp asm("sp");
-      os_abort("debug max cycles reached (sp=%p msp=%p psp=%p)", sp, __get_MSP(), __get_PSP());
+      os_abort("debug max cycles reached");
     }
 #endif
 
@@ -304,6 +303,8 @@ void os_schedule(void) {
 void os_exit(void) {
   os.task.current->state = OS_TASK_STATE_EXITED;
 
+  os_signal(os.task.current, OS_SIGNAL_KILL);
+
   os_task_t * tmp = os.task.head;
 
   while (tmp) {
@@ -354,6 +355,8 @@ void os_task_kill(os_task_t * task) {
       // Set task state to EXITED
       task->state = OS_TASK_STATE_EXITED;
 
+      os_signal(os.task.current, OS_SIGNAL_KILL);
+
       OS_LOG_TRACE(TASK_KILL, "Killed %p '%s'", task, task->name);
 
       return;
@@ -381,12 +384,37 @@ void os_task_pause(os_task_t * task) {
   ASSERT_RETURN(task);
 
   task->state = OS_TASK_STATE_PAUSED;
+
+  os_signal(task, OS_SIGNAL_PAUSE);
 }
 
 void os_task_resume(os_task_t * task) {
   ASSERT_RETURN(task);
 
   task->state = OS_TASK_STATE_READY;
+
+  os_signal(task, OS_SIGNAL_RESUME);
+}
+
+void os_signal(os_task_t * task, os_signal_t signal) {
+  if (task->sig && task->signals & signal) {
+    task->sig(signal, task->arg);
+  }
+}
+
+void os_signal_register_handler(uint8_t signals_mask, os_task_signal_handler_t fn) {
+  os.task.current->signals = signals_mask;
+  if (fn) {
+    os.task.current->sig = fn;
+  }
+}
+
+bool os_task_is_running(os_task_t * task) {
+  ASSERT_RETURN(task, false);
+
+  return task->state != OS_TASK_STATE_NONE
+      && task->state != OS_TASK_STATE_PAUSED
+      && task->state != OS_TASK_STATE_EXITED;
 }
 
 os_task_t * os_task_get(const char * name) {
