@@ -47,7 +47,7 @@ typedef struct {
  * Init WatchDogTimer
  *
  * @param wdg SoftWDG Context
- * @param max Max value, that counter can reach before being considered expired
+ * @param max Max value, that counter can reach before being considered overflowed
  * @param action Bitmask of actions to perform
  */
 void soft_wdg_init(soft_wdg_t * wdg, uint32_t max, uint8_t action, const char * label, void * ctx);
@@ -67,7 +67,7 @@ void soft_wdg_inc(soft_wdg_t * wdg);
 void soft_wdg_reset(soft_wdg_t * wdg);
 
 /**
- * Called when counter expired
+ * Called when counter overflowed
  *
  * @param wdg SoftWDG Context
  */

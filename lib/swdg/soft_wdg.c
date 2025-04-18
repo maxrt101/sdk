@@ -39,7 +39,7 @@ void soft_wdg_inc(soft_wdg_t * wdg) {
 
   if (wdg->counter >= wdg->max) {
     if (wdg->action & SWDG_ACTION_LOG) {
-      log_warn(wdg->label ? "Timeout expired for %s" : "Timeout expired", wdg->label);
+      log_warn(wdg->label ? "Counter overflowed for %s" : "Counter overflowed", wdg->label);
     }
 
     if (wdg->action & SWDG_ACTION_NOTIFY) {
