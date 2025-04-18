@@ -83,13 +83,14 @@ __STATIC_INLINE error_t led_parse_command(led_t * led) {
     }
 
     case LED_RGB: {
-      uint16_t r = led_get_next(led);
-      LED_ASSERT(r != LED_ACTION_END_MARK, E_INVAL);
-      uint16_t g = led_get_next(led);
-      LED_ASSERT(g != LED_ACTION_END_MARK, E_INVAL);
-      uint16_t b = led_get_next(led);
-      LED_ASSERT(b != LED_ACTION_END_MARK, E_INVAL);
+      uint16_t r  = led_get_next(led);
+      uint16_t g  = led_get_next(led);
+      uint16_t b  = led_get_next(led);
       uint16_t ms = led_get_next(led);
+
+      LED_ASSERT(r  != LED_ACTION_END_MARK, E_INVAL);
+      LED_ASSERT(g  != LED_ACTION_END_MARK, E_INVAL);
+      LED_ASSERT(b  != LED_ACTION_END_MARK, E_INVAL);
       LED_ASSERT(ms != LED_ACTION_END_MARK, E_INVAL);
 
       timeout_start(&led->command_timeout, ms);
@@ -99,11 +100,11 @@ __STATIC_INLINE error_t led_parse_command(led_t * led) {
 
     case LED_FADE: {
       led->fade.from = led_get_next(led);
-      led->fade.to = led_get_next(led);
+      led->fade.to   = led_get_next(led);
       led->fade.time = led_get_next(led);
 
       LED_ASSERT(led->fade.from != LED_ACTION_END_MARK, E_EMPTY);
-      LED_ASSERT(led->fade.to != LED_ACTION_END_MARK, E_EMPTY);
+      LED_ASSERT(led->fade.to   != LED_ACTION_END_MARK, E_EMPTY);
       LED_ASSERT(led->fade.time != LED_ACTION_END_MARK, E_EMPTY);
 
       if (led->fade.to > led->fade.from) {
