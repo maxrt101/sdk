@@ -82,6 +82,21 @@ __STATIC_INLINE error_t led_parse_command(led_t * led) {
       return led_off(led);
     }
 
+    case LED_RGB: {
+      uint16_t r = led_get_next(led);
+      LED_ASSERT(r != LED_ACTION_END_MARK, E_INVAL);
+      uint16_t g = led_get_next(led);
+      LED_ASSERT(g != LED_ACTION_END_MARK, E_INVAL);
+      uint16_t b = led_get_next(led);
+      LED_ASSERT(b != LED_ACTION_END_MARK, E_INVAL);
+      uint16_t ms = led_get_next(led);
+      LED_ASSERT(ms != LED_ACTION_END_MARK, E_INVAL);
+
+      timeout_start(&led->command_timeout, ms);
+      led->state = LED_STATE_EXECUTING;
+      return led_rgb_ctl(led, r, g, b);
+    }
+
     case LED_FADE: {
       led->fade.from = led_get_next(led);
       led->fade.to = led_get_next(led);
@@ -157,18 +172,35 @@ __STATIC_INLINE error_t led_parse_command(led_t * led) {
   return E_OK;
 }
 
-/* Shared functions ========================================================= */
-error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * queue) {
-  ASSERT_RETURN(led, E_NULL);
-
+static void led_init_common(led_t * led, queue_t * queue) {
   memset(led, 0, sizeof(*led));
 
-  gpio_ctx_init(&led->gpio, gpio, polarity);
-  pwm_init(&led->pwm, &led->gpio);
   led->queue        = queue;
   led->allow_repeat = true;
   led->repeat_count = 0;
   led->action_idx   = 0;
+}
+
+/* Shared functions ========================================================= */
+error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * queue) {
+  ASSERT_RETURN(led && queue, E_NULL);
+
+  led_init_common(led, queue);
+
+  gpio_ctx_init(&led->gpio, gpio, polarity);
+  pwm_init(&led->pwm, &led->gpio);
+
+  return E_OK;
+}
+
+error_t led_init_rgb(led_t * led, led_rgb_init_t * gpios, queue_t * queue) {
+  ASSERT_RETURN(led && gpios && queue, E_NULL);
+
+  led_init_common(led, queue);
+
+  gpio_ctx_init(&led->rgb.r, gpios->r.gpio, gpios->r.polarity);
+  gpio_ctx_init(&led->rgb.g, gpios->g.gpio, gpios->g.polarity);
+  gpio_ctx_init(&led->rgb.b, gpios->b.gpio, gpios->b.polarity);
 
   return E_OK;
 }
@@ -176,13 +208,24 @@ error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * q
 error_t led_on(led_t * led) {
   ASSERT_RETURN(led, E_NULL);
 
-  return gpio_ctx_set(&led->gpio);
+  return led->type == LED_TYPE_RGB ? led_rgb_ctl(led, 1, 1, 1) : gpio_ctx_set(&led->gpio);
 }
 
 error_t led_off(led_t * led) {
   ASSERT_RETURN(led, E_NULL);
 
-  return gpio_ctx_clear(&led->gpio);
+  return led->type == LED_TYPE_RGB ? led_rgb_ctl(led, 0, 0, 0) : gpio_ctx_clear(&led->gpio);
+}
+
+error_t led_rgb_ctl(led_t * led, uint8_t r, uint8_t g, uint8_t b) {
+  ASSERT_RETURN(led, E_NULL);
+
+  // TODO: Create 3 PWM instances for each pin, and set brightness with them for each pin
+  r ? gpio_ctx_set(&led->rgb.r) : gpio_ctx_clear(&led->rgb.r);
+  r ? gpio_ctx_set(&led->rgb.g) : gpio_ctx_clear(&led->rgb.g);
+  r ? gpio_ctx_set(&led->rgb.b) : gpio_ctx_clear(&led->rgb.b);
+
+  return E_OK;
 }
 
 error_t led_schedule(led_t * led, led_pattern_t * pattern) {

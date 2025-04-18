@@ -90,12 +90,21 @@ extern "C" {
 
 /* Enums ==================================================================== */
 /**
+ * LED Type
+ */
+typedef enum {
+  LED_TYPE_DEFAULT = 0,
+  LED_TYPE_RGB,
+} led_type_t;
+
+/**
  * Action to be performed
  */
 typedef enum {
   LED_NONE = 0,   /** Does nothing */
   LED_ON,         /** Turns LED on, args: time_ms */
   LED_OFF,        /** Turns LED off, args: time_ms */
+  LED_RGB,        /** Controls RGB LED pins individually, args: r, g, b, time_ms */
   LED_FADE,       /** Fades LED up/down, args: duty_from, duty_to, time_ms */
   LED_FADE_HOLD,  /** Fades LED down, args: duty_from, duty_to, time_ms */
   LED_REPEAT,     /** Repeats whole pattern from the beginning */
@@ -124,8 +133,20 @@ typedef struct {
  * LED Context
  */
 typedef struct led_s {
-  gpio_ctx_t      gpio;         /** LED GPIO Context */
-  pwm_t           pwm;          /** PWM For this LED */
+  led_type_t        type;
+  union {
+    struct {
+      gpio_ctx_t      gpio;    /** LED GPIO Context */
+      pwm_t           pwm;     /** PWM For this LED */
+    };
+    // TODO: Create 3 PWM instances for each pin, and set brightness with them for each pin
+    struct {
+      gpio_ctx_t    r;         /** RED LED GPIO Context */
+      gpio_ctx_t    g;         /** GREEN LED GPIO Context */
+      gpio_ctx_t    b;         /** BLUE LED GPIO Context */
+    } rgb;
+  };
+
 
   led_state_t     state;        /** LED state machine state */
   led_pattern_t * pattern;      /** Current LED pattern */
@@ -167,6 +188,24 @@ typedef struct led_s {
   };
 } led_t;
 
+/**
+ * Initialization context for RGB led
+ */
+typedef struct {
+  struct {
+    gpio_t gpio;
+    gpio_polarity_t polarity;
+  } r;
+  struct {
+    gpio_t gpio;
+    gpio_polarity_t polarity;
+  } g;
+  struct {
+    gpio_t gpio;
+    gpio_polarity_t polarity;
+  } b;
+} led_rgb_init_t;
+
 /* Variables ================================================================ */
 /* Shared functions ========================================================= */
 /**
@@ -175,8 +214,18 @@ typedef struct led_s {
  * @param[in] led LED Context
  * @param[in] gpio Initialized GPIO struct that holds LED Pin info
  * @param[in] polarity LED polarity
+ * @param[in] queue Queue for patterns
  */
 error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * queue);
+
+/**
+ * Initializes RGB LED context
+ *
+ * @param[in] led LED Context
+ * @param[in] gpios Initialized GPIO struct that holds LED Pin info for R G & B pins
+ * @param[in] queue Queue for patterns
+ */
+error_t led_rgb_init(led_t * led, led_rgb_init_t * gpios, queue_t * queue);
 
 /**
  * Turns LED on with regards to polarity
@@ -191,6 +240,16 @@ error_t led_on(led_t * led);
  * @param[in] led LED Context
  */
 error_t led_off(led_t * led);
+
+/**
+ * Controls RGB LED with regards to polarity
+ *
+ * @param[in] led LED Context
+ * @param[in] r Value for RED pin
+ * @param[in] g Value for GREEN pin
+ * @param[in] b Value for BLUE pin
+ */
+error_t led_rgb_ctl(led_t * led, uint8_t r, uint8_t g, uint8_t b);
 
 /**
  * Sets pattern to execute next
