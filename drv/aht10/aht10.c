@@ -57,8 +57,10 @@ static error_t aht10_parse_temp(aht10_t * ctx, uint8_t * data, aht10_measurement
   // FIXME: Fraction is probably wrong
   measurement->temp.fraction = ((((int32_t) raw_temp * AHT10_TEMP_PRECISION / POW_2_20) * 200) - 50) % AHT10_TEMP_PRECISION;
 
+#if AHT10_VERBOSE
   log_debug("aht10_parse_temp: raw=0x%x parsed=%d.%d",
     raw_temp, measurement->temp.value, measurement->temp.fraction);
+#endif
 
   return E_OK;
 }
@@ -75,8 +77,10 @@ static error_t aht10_parse_humidity(aht10_t * ctx, uint8_t * data, aht10_measure
   measurement->humidity.value = raw_humidity * 100 / POW_2_20;
   measurement->humidity.fraction = raw_humidity * 100 * AHT10_HUMIDITY_PRECISION / POW_2_20 % AHT10_HUMIDITY_PRECISION;
 
+#if AHT10_VERBOSE
   log_debug("aht10_parse_humidity: raw=0x%x parsed=%d.%d",
     raw_humidity, measurement->humidity.value, measurement->humidity.fraction);
+#endif
 
   return E_OK;
 }
@@ -88,7 +92,16 @@ error_t aht10_init(aht10_t * ctx, i2c_t * i2c, uint16_t addr) {
   ctx->i2c = i2c;
   ctx->addr = addr;
 
-  return aht10_send_init(ctx);
+  ERROR_CHECK_RETURN(aht10_reset(ctx));
+
+  error_t err = aht10_send_init(ctx);
+
+#if USE_AHT10_IGNORE_INIT_ERROR
+  log_warn("aht10_init: %s, ignorring...", error2str(err));
+  return E_OK;
+#else
+  return err;
+#endif
 }
 
 error_t aht10_deinit(aht10_t * ctx) {
@@ -124,6 +137,7 @@ error_t aht10_read(aht10_t * ctx, aht10_measurement_t * measurement) {
 
   ERROR_CHECK_RETURN(i2c_recv(ctx->i2c, ctx->addr, data, sizeof(data)));
 
+#if AHT10_VERBOSE
 #define FH2 "%02x "
 #define D(i) data[i]
   log_info(
@@ -133,6 +147,7 @@ error_t aht10_read(aht10_t * ctx, aht10_measurement_t * measurement) {
   );
 #undef FH2
 #undef D
+#endif
 
   if ((data[0] & 0x80) == 0) {
     ERROR_CHECK_RETURN(aht10_parse_temp(ctx, data, measurement));
