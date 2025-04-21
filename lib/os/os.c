@@ -193,14 +193,18 @@ void os_task_create(
 
   memset(task, 0, sizeof(*task));
 
-  task->state = OS_TASK_STATE_NONE;
-  task->name = name;
+  task->state       = OS_TASK_STATE_NONE;
+  task->name        = name;
   task->stack.start = stack;
-  task->stack.end = stack + stack_size;
-  task->fn = fn;
-  task->arg = arg;
+  task->stack.end   = stack + stack_size;
+  task->fn          = fn;
+  task->arg         = arg;
+  task->signals     = OS_SIGNAL_NONE;
+  task->cycles      = 0;
 
-  UTIL_IF_1(OS_TRACE_TASK_STACK, task->stack.last_sp = task->stack.end);
+  timeout_expire(&task->wait_timeout);
+
+  UTIL_IF_1(OS_STAT_TRACE_TASK_STACK, task->stack.last_sp = task->stack.end);
 
   os_task_start(task);
 }
@@ -287,6 +291,8 @@ void os_launch(void) {
       if (!setjmp(os.ctx.buf)) {
         longjmp(os.task.current->ctx.buf, 1);
       }
+
+      UTIL_IF_1(USE_OS_STAT, os.task.current->cycles++);
     }
 
     UTIL_IF_1(OS_USE_SOFT_WDT, soft_wdt_check());
@@ -311,8 +317,8 @@ void os_schedule(void) {
   }
 #endif
 
-#if OS_TRACE_TASK_STACK
-  if (os.cycles % OS_TRACE_TASK_STACK_CYCLES == 0) {
+#if OS_STAT_TRACE_TASK_STACK
+  if (os.cycles % OS_STAT_TRACE_TASK_STACK_CYCLES == 0) {
     if (!CHECK_MAGIC(os.task.current->stack.last_sp)) {
       for (uint32_t * sp = os.task.current->stack.start; sp < (uint32_t *) os.task.current->stack.end; ++sp) {
         if (*sp != OS_STACK_MAGIC) {
@@ -482,14 +488,20 @@ bool os_task_iter(os_task_t ** task) {
 }
 
 void os_task_stat(os_task_t * task, os_task_stat_t * stat) {
+#if USE_OS_STAT
   ASSERT_RETURN(task && stat);
 
   stat->name       = task->name;
   stat->state      = task->state;
+  stat->cycles     = task->cycles;
   stat->stack_size = (uint8_t *) task->stack.end - (uint8_t *) task->stack.start;
 
-#if OS_TRACE_TASK_STACK
+#if OS_STAT_TRACE_TASK_STACK
   stat->stack_used = (uint8_t *) task->stack.end - (uint8_t *) task->stack.last_sp;
+#endif
+
+#else
+  log_warn("os_task_stat is disabled");
 #endif
 }
 

@@ -99,17 +99,24 @@ extern "C" {
 #endif
 
 /**
+ * If enabled - will enable os_stat
+ */
+#ifndef USE_OS_STAT
+#define USE_OS_STAT                           1
+#endif
+
+/**
  * If enabled - will trance stack usage for each task
  */
-#ifndef OS_TRACE_TASK_STACK
-#define OS_TRACE_TASK_STACK                   1
+#ifndef OS_STAT_TRACE_TASK_STACK
+#define OS_STAT_TRACE_TASK_STACK              1
 #endif
 
 /**
  * Period in cycles, how often check stack usage
  */
-#ifndef OS_TRACE_TASK_STACK_CYCLES
-#define OS_TRACE_TASK_STACK_CYCLES            10
+#ifndef OS_STAT_TRACE_TASK_STACK_CYCLES
+#define OS_STAT_TRACE_TASK_STACK_CYCLES            10
 #endif
 
 
@@ -253,35 +260,50 @@ typedef void (*os_task_signal_handler_t)(os_signal_t signal, void *);
  * Task context used by os
  */
 typedef struct os_task_t {
-  struct os_task_t * next;
+  /** Task contexts are organized in a linked list */
+  struct os_task_t *        next;
 
-  os_task_state_t state;
-  const char * name;
+  os_task_state_t           state;
+  const char *              name;
 
-  os_task_ctx_t ctx;
+  os_task_ctx_t             ctx;
 
+  /** Stores info about task stack */
   struct {
-    void * start;
-    void * end;
+    void *                  start;
+    void *                  end;
 
-    UTIL_IF_1(OS_TRACE_TASK_STACK, void * last_sp);
+    /** Stores last known stack pointer, if enabled */
+    UTIL_IF_1(OS_STAT_TRACE_TASK_STACK, void * last_sp);
   } stack;
 
-  void * arg;
-  os_task_fn_t fn;
-  os_task_signal_handler_t sig;
+  /** User argument to fn & sig */
+  void *                    arg;
 
-  uint8_t signals;
-  timeout_t wait_timeout;
+  /** Task worker */
+  os_task_fn_t              fn;
+
+  /** Signal handler */
+  os_task_signal_handler_t  sig;
+
+  /** Number of cycles, a task ran for */
+  size_t                    cycles;
+
+  /** Timeout for os_delay, while not expired, will skip returning to task context */
+  timeout_t                 wait_timeout;
+
+  /** Mask of os_signal_t values, which is used to decide whether to call sig handler */
+  uint8_t                   signals;
 } os_task_t;
 
 /**
  * Task stats
  */
 typedef struct {
-  const char * name;
-  size_t stack_size;
-  size_t stack_used;
+  const char *    name;
+  size_t          stack_size;
+  size_t          stack_used;
+  size_t          cycles;
   os_task_state_t state;
 } os_task_stat_t;
 
