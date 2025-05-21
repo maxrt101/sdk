@@ -324,7 +324,7 @@ error_t ra02_set_freq(trx_t * trx, uint32_t khz) {
   return E_OK;
 }
 
-error_t ra02_get_power(trx_t * trx, int8_t * db) {
+error_t ra02_get_power(trx_t * trx, uint8_t * db) {
   ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_REG_PA_CFG, db));
 
   UTIL_MAP_RANGE_TABLE_REV(ra02_power_mapping_db, *db, *db);
@@ -332,7 +332,7 @@ error_t ra02_get_power(trx_t * trx, int8_t * db) {
   return E_OK;
 }
 
-error_t ra02_set_power(trx_t * trx, int8_t db) {
+error_t ra02_set_power(trx_t * trx, uint8_t db) {
   if (db < 0 || db > RA02_MAX_PA) {
     return E_INVAL;
   }
