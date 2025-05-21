@@ -102,7 +102,6 @@ error_t os_heap_free(os_heap_t * heap, void * ptr);
  *       (free may get slower)
  *
  * @param heap Heap Context
- * @param ptr Previously allocated pointer
  */
 error_t os_heap_defrag(os_heap_t * heap);
 
