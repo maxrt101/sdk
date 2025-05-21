@@ -325,7 +325,11 @@ error_t ra02_set_freq(trx_t * trx, uint32_t khz) {
 }
 
 error_t ra02_get_power(trx_t * trx, int8_t * db) {
-  return ra02_read_reg(trx, RA02_REG_PA_CFG, db);
+  ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_REG_PA_CFG, db));
+
+  UTIL_MAP_RANGE_TABLE_REV(ra02_power_mapping_db, *db, *db);
+
+  return E_OK;
 }
 
 error_t ra02_set_power(trx_t * trx, int8_t db) {
@@ -364,7 +368,7 @@ error_t ra02_set_preamble(trx_t * trx, uint32_t preamble) {
   return E_OK;
 }
 
-error_t ra02_get_rssi(trx_t * trx, uint8_t * rssi) {
+error_t ra02_get_rssi(trx_t * trx, int8_t * rssi) {
   return ra02_read_reg(trx, RA02_LORA_REG_LAST_PKT_RSSI_VAL, rssi);
 }
 

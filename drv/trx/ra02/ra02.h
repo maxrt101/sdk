@@ -31,20 +31,6 @@ extern "C" {
 #define TRX_SEND_IRQ_TIMEOUT 500
 #endif
 
-/**
- * Queue size for async recv context
- */
-#ifndef TRX_QUEUE_SIZE
-#define TRX_QUEUE_SIZE 4
-#endif
-
-/**
- * Queue size for async recv context
- */
-#ifndef TRX_ASYNC_TIMEOUT_MS
-#define TRX_ASYNC_TIMEOUT_MS 500
-#endif
-
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
@@ -89,13 +75,13 @@ error_t ra02_deinit(trx_t * trx);
 error_t ra02_reset(trx_t * trx);
 error_t ra02_sleep(trx_t * trx);
 error_t ra02_set_freq(trx_t * trx, uint32_t khz);
-error_t ra02_get_power(trx_t * trx, int8_t * db);
-error_t ra02_set_power(trx_t * trx, int8_t db);
+error_t ra02_get_power(trx_t * trx, uint8_t * db);
+error_t ra02_set_power(trx_t * trx, uint8_t db);
 error_t ra02_set_sync_word(trx_t * trx, uint32_t sync_word);
 error_t ra02_set_baudrate(trx_t * trx, uint32_t baudrate);
 error_t ra02_set_bandwidth(trx_t * trx, uint32_t bandwidth);
 error_t ra02_set_preamble(trx_t * trx, uint32_t preamble);
-error_t ra02_get_rssi(trx_t * trx, uint8_t * rssi);
+error_t ra02_get_rssi(trx_t * trx, int8_t * rssi);
 error_t ra02_irq_handler(trx_t * trx);
 error_t ra02_send(trx_t * trx, uint8_t * buf, size_t size);
 error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
