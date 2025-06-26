@@ -25,3 +25,7 @@ void runtime_inc(milliseconds_t ms) {
 milliseconds_t runtime_get() {
   return global_time;
 }
+
+void runtime_set(milliseconds_t ms) {
+  global_time = ms;
+}

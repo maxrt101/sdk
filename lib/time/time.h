@@ -45,6 +45,11 @@ void runtime_inc(milliseconds_t ms);
  */
 milliseconds_t runtime_get();
 
+/**
+ * Sets global time (in ms)
+ */
+void runtime_set(milliseconds_t ms);
+
 #ifdef __cplusplus
 }
 #endif
