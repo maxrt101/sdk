@@ -55,6 +55,8 @@ macro(project_init)
 
     if (${CMAKE_BUILD_TYPE} STREQUAL DEBUG)
         project_add_define("USE_DEBUG=1")
+    else ()
+        project_add_define("USE_DEBUG=0")
     endif ()
 endmacro()
 
