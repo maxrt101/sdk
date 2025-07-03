@@ -69,7 +69,7 @@ typedef struct trx_fn_s {
   error_t (*set_baudrate)(trx_t * trx, uint32_t baudrate);
   error_t (*set_bandwidth)(trx_t * trx, uint32_t bandwidth);
   error_t (*set_preamble)(trx_t * trx, uint32_t preamble);
-  error_t (*get_rssi)(trx_t * trx, int8_t * rssi);
+  error_t (*get_rssi)(trx_t * trx, int16_t * rssi);
   error_t (*irq_handler)(trx_t * trx);
   error_t (*send)(trx_t * trx, uint8_t * buf, size_t size);
   error_t (*recv)(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
@@ -239,7 +239,7 @@ __STATIC_FORCEINLINE error_t trx_set_preamble(trx_t * trx, uint32_t preamble) {
  * @param[in]  trx  TRX API handle
  * @param[out] rssi RSSI value measured by the module
  */
-__STATIC_FORCEINLINE error_t trx_get_rssi(trx_t * trx, int8_t * rssi) {
+__STATIC_FORCEINLINE error_t trx_get_rssi(trx_t * trx, int16_t * rssi) {
   ASSERT_RETURN(trx && rssi, E_NULL);
   return trx->fn.get_rssi(trx, rssi);
 }

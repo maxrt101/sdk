@@ -23,6 +23,9 @@
 /** Internal constants */
 #define RA02_MAX_PA           20
 
+#define RA02_RSSI_HF_SUB (-157)
+#define RA02_RSSI_LF_SUB (-164)
+
 /** Default internal trx configuration parameters */
 #define RA02_DEFAULT_CRC_RATE RA02_CRC_RATE_4_7 /* CRC Rate */
 #define RA02_DEFAULT_SF       8                 /* Spreading Factor */
@@ -374,8 +377,8 @@ error_t ra02_set_preamble(trx_t * trx, uint32_t preamble) {
   return E_OK;
 }
 
-error_t ra02_get_rssi(trx_t * trx, int8_t * rssi) {
-  *rssi = trx->ra02.last_rssi;
+error_t ra02_get_rssi(trx_t * trx, int16_t * rssi) {
+  *rssi = RA02_RSSI_HF_SUB + trx->ra02.last_rssi;
   return E_OK;
 }
 

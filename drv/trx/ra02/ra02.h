@@ -82,7 +82,7 @@ error_t ra02_set_sync_word(trx_t * trx, uint32_t sync_word);
 error_t ra02_set_baudrate(trx_t * trx, uint32_t baudrate);
 error_t ra02_set_bandwidth(trx_t * trx, uint32_t bandwidth);
 error_t ra02_set_preamble(trx_t * trx, uint32_t preamble);
-error_t ra02_get_rssi(trx_t * trx, int8_t * rssi);
+error_t ra02_get_rssi(trx_t * trx, int16_t * rssi);
 error_t ra02_irq_handler(trx_t * trx);
 error_t ra02_send(trx_t * trx, uint8_t * buf, size_t size);
 error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
