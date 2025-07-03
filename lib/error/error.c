@@ -38,6 +38,7 @@ const char * error2str(error_t err) {
     case E_EMPTY:       return "E_EMPTY";
     case E_NOMEM:       return "E_NOMEM";
     case E_OUTOFBOUNDS: return "E_OUTOFBOUNDS";
+    case E_NOHANDLER:   return "E_NOHANDLER";
     default:
       return "E_?";
   }

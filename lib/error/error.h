@@ -39,6 +39,7 @@ typedef enum {
   E_EMPTY,        /** Buffer/Response is empty */
   E_NOMEM,        /** No memory left */
   E_OUTOFBOUNDS,  /** Out Of Bounds Access */
+  E_NOHANDLER,    /** No handler for operation */
 } error_t;
 
 /* Types ==================================================================== */
