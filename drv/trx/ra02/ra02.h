@@ -53,6 +53,7 @@ typedef struct {
   spi_t * spi;
   gpio_t reset;
   uint8_t irq_flags;
+  int8_t last_rssi;
 } ra02_trx_t;
 
 /* Variables ================================================================ */

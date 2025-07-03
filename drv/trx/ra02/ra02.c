@@ -375,7 +375,8 @@ error_t ra02_set_preamble(trx_t * trx, uint32_t preamble) {
 }
 
 error_t ra02_get_rssi(trx_t * trx, int8_t * rssi) {
-  return ra02_read_reg(trx, RA02_LORA_REG_LAST_PKT_RSSI_VAL, rssi);
+  *rssi = trx->ra02.last_rssi;
+  return E_OK;
 }
 
 error_t ra02_irq_handler(trx_t * trx) {
@@ -441,6 +442,10 @@ error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout
     if (timeout && timeout_is_expired(timeout)) {
       ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
       return E_TIMEOUT;
+    }
+
+    if (trx->ra02.irq_flags & RA02_LORA_IRQ_FLAGS_VALID_HDR) {
+      ra02_read_reg(trx, RA02_LORA_REG_LAST_PKT_RSSI_VAL, &trx->ra02.last_rssi);
     }
 
     if (trx->ra02.irq_flags & RA02_LORA_IRQ_FLAGS_RX_DONE) {
