@@ -318,7 +318,7 @@ typedef struct {
  *
  * @param task Task context
  */
-void os_task_start(os_task_t * task);
+error_t os_task_start(os_task_t * task);
 
 /**
  * Manually creates task
@@ -330,7 +330,7 @@ void os_task_start(os_task_t * task);
  * @param fn          Task function
  * @param arg         Task function argument
  */
-void os_task_create(
+error_t os_task_create(
   os_task_t * task,
   const char * name,
   uint8_t * stack,
@@ -368,7 +368,7 @@ void os_exit(void);
  *
  * @param task Task handle to kill
  */
-void os_task_kill(os_task_t * task);
+error_t os_task_kill(os_task_t * task);
 
 /**
  * Pauses task, can be resumed later with os_task_resume
@@ -377,7 +377,7 @@ void os_task_kill(os_task_t * task);
  *
  * @param task Task handle to pause
  */
-void os_task_pause(os_task_t * task);
+error_t os_task_pause(os_task_t * task);
 
 /**
  * Resumes task, paused by os_task_pause
@@ -386,7 +386,7 @@ void os_task_pause(os_task_t * task);
  *
  * @param task Task handle to resume
  */
-void os_task_resume(os_task_t * task);
+error_t os_task_resume(os_task_t * task);
 
 /**
  * Send signal to a task (will call signal handler)
@@ -397,7 +397,7 @@ void os_task_resume(os_task_t * task);
  * @param task Task handle
  * @param signal Signal type
  */
-void os_signal(os_task_t * task, os_signal_t signal);
+error_t os_signal(os_task_t * task, os_signal_t signal);
 
 /**
  * Register signal handler for current task
@@ -436,7 +436,7 @@ os_task_t * os_task_current(void);
  *
  * @param task Task handle
  */
-void os_task_set_priority(os_task_t * task, uint8_t priority);
+error_t os_task_set_priority(os_task_t * task, uint8_t priority);
 
 /**
  * Yields execution
@@ -471,7 +471,7 @@ bool os_task_iter(os_task_t ** task);
  * @param[in] task Task handle
  * @param[out] stat Task stats
  */
-void os_task_stat(os_task_t * task, os_task_stat_t * stat);
+error_t os_task_stat(os_task_t * task, os_task_stat_t * stat);
 
 /**
  * Converts os_task_state_t enum value to it's string representation

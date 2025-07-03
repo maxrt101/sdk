@@ -26,7 +26,7 @@
 
 /**
  * Can statically limit number of cycles that the scheduler will run for
- * After exceeding MAX_CYCLES aborts
+ * After exceeding MAX_CYCLES scheduler aborts
  */
 #define USE_MAX_CYCLES                    0
 
@@ -166,8 +166,8 @@ __STATIC_INLINE void os_task_next(void) {
 }
 
 /* Shared functions ========================================================= */
-void os_task_start(os_task_t * task) {
-  ASSERT_RETURN(task);
+error_t os_task_start(os_task_t * task) {
+  ASSERT_RETURN(task, E_NULL);
 
   if (!os.task.head) {
     os.task.head = task;
@@ -185,9 +185,11 @@ void os_task_start(os_task_t * task) {
   task->state = OS_TASK_STATE_INIT;
 
   log_info("os_task_start(%p): name='%s' stack=(%p %p)", task, task->name, task->stack.start, task->stack.end);
+
+  return E_OK;
 }
 
-void os_task_create(
+error_t os_task_create(
   os_task_t * task,
   const char * name,
   uint8_t * stack,
@@ -195,7 +197,7 @@ void os_task_create(
   os_task_fn_t fn,
   void * arg
 ) {
-  ASSERT_RETURN(task && name && stack && stack_size && fn);
+  ASSERT_RETURN(task && name && stack && stack_size && fn, E_NULL);
 
   memset(task, 0, sizeof(*task));
 
@@ -213,7 +215,7 @@ void os_task_create(
 
   UTIL_IF_1(OS_STAT_TRACE_TASK_STACK, task->stack.last_sp = task->stack.end);
 
-  os_task_start(task);
+  return os_task_start(task);
 }
 
 // __OPTIMIZE(0)
@@ -391,15 +393,15 @@ void os_exit(void) {
   longjmp(os.ctx.buf, 1);
 }
 
-void os_task_kill(os_task_t * task) {
-  ASSERT_RETURN(task);
+error_t os_task_kill(os_task_t * task) {
+  ASSERT_RETURN(task, E_NULL);
 
   // If task tries to do harakiri - abort or signal an error
   if (os.task.current == task) {
     UTIL_IF_1(OS_ABORT_ON_SELF_KILL,
       os_abort("Can't kill self - use os_exit()"),
       log_error("Can't kill self - use os_exit()"));
-    return;
+    return E_INVAL;
   }
 
   os_task_t * tmp = os.task.head;
@@ -417,7 +419,7 @@ void os_task_kill(os_task_t * task) {
 
       OS_LOG_TRACE(TASK_KILL, "Killed %p '%s'", task, task->name);
 
-      return;
+      return E_OK;
     }
   }
 
@@ -425,6 +427,8 @@ void os_task_kill(os_task_t * task) {
   UTIL_IF_1(OS_ABORT_ON_KILL_NON_SCHEDULED_TASK,
     os_abort("Tried to kill not scheduled task %p '%s'", task, task->name),
     log_error("Tried to kill not scheduled task %p '%s'", task, task->name));
+
+  return E_NOTFOUND;
 }
 
 void os_delay(milliseconds_t ms) {
@@ -438,26 +442,31 @@ void os_delay(milliseconds_t ms) {
   os_schedule();
 }
 
-void os_task_pause(os_task_t * task) {
-  ASSERT_RETURN(task);
+error_t os_task_pause(os_task_t * task) {
+  ASSERT_RETURN(task, E_NULL);
 
   task->state = OS_TASK_STATE_PAUSED;
 
-  os_signal(task, OS_SIGNAL_PAUSE);
+  return os_signal(task, OS_SIGNAL_PAUSE);
 }
 
-void os_task_resume(os_task_t * task) {
-  ASSERT_RETURN(task);
+error_t os_task_resume(os_task_t * task) {
+  ASSERT_RETURN(task, E_NULL);
 
   task->state = OS_TASK_STATE_READY;
 
-  os_signal(task, OS_SIGNAL_RESUME);
+  return os_signal(task, OS_SIGNAL_RESUME);
 }
 
-void os_signal(os_task_t * task, os_signal_t signal) {
+error_t os_signal(os_task_t * task, os_signal_t signal) {
+  ASSERT_RETURN(task, E_NULL);
+
   if (task->sig && task->signals & signal) {
     task->sig(signal, task->arg);
+    return E_OK;
   }
+
+  return E_NOHANDLER;
 }
 
 void os_signal_register_handler(uint8_t signals_mask, os_task_signal_handler_t fn) {
@@ -492,10 +501,12 @@ os_task_t * os_task_current(void) {
   return os.task.current;
 }
 
-void os_task_set_priority(os_task_t * task, uint8_t priority) {
-  ASSERT_RETURN(task);
+error_t os_task_set_priority(os_task_t * task, uint8_t priority) {
+  ASSERT_RETURN(task, E_NULL);
 
   task->priority = priority;
+
+  return E_OK;
 }
 
 bool os_task_iter(os_task_t ** task) {
@@ -510,9 +521,9 @@ bool os_task_iter(os_task_t ** task) {
   }
 }
 
-void os_task_stat(os_task_t * task, os_task_stat_t * stat) {
+error_t os_task_stat(os_task_t * task, os_task_stat_t * stat) {
 #if USE_OS_STAT
-  ASSERT_RETURN(task && stat);
+  ASSERT_RETURN(task && stat, E_NULL);
 
   stat->name       = task->name;
   stat->priority   = task->priority;
@@ -524,8 +535,10 @@ void os_task_stat(os_task_t * task, os_task_stat_t * stat) {
   stat->stack_used = (uint8_t *) task->stack.end - (uint8_t *) task->stack.last_sp;
 #endif
 
+  return E_OK;
 #else
   log_warn("os_task_stat is disabled");
+  return E_EMPTY;
 #endif
 }
 
