@@ -21,10 +21,18 @@ extern "C" {
 
 /* Defines ================================================================== */
 /* Macros =================================================================== */
+/**
+ *
+ *
+ * @param __mode
+ */
+#define OS_WITH_POWER_MODE_BLOCKED(__mode) \
+  for (bool s = os_power_mode_blocked_enter(__mode); s; s = os_power_mode_blocked_exit(__mode))
+
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 typedef enum {
-  OS_POWER_MODE_NORMAL = 0,
+  OS_POWER_MODE_AUTO = 0,
   OS_POWER_MODE_FAST_SLEEP,
   OS_POWER_MODE_DEEP_SLEEP,
 
@@ -63,7 +71,7 @@ error_t os_power_mode_block(os_power_mode_t mode, bool block);
  *
  * @param mode Power mode
  */
-error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t mode);
+error_t os_power_mode_change_port(os_power_mode_t mode);
 
 /**
  * Converts power_mode_t enum value to string
@@ -71,6 +79,26 @@ error_t os_power_mode_change_port(os_power_mode_t prev_mode, os_power_mode_t mod
  * @param mode Power mode
  */
 const char * os_power_mode_to_str(os_power_mode_t mode);
+
+/**
+ *
+ *
+ * @param mode
+ */
+__STATIC_INLINE bool os_power_mode_blocked_enter(os_power_mode_t mode) {
+  os_power_mode_block(mode, true);
+  return true;
+}
+
+/**
+ *
+ *
+ * @param mode
+ */
+__STATIC_INLINE bool os_power_mode_blocked_exit(os_power_mode_t mode) {
+  os_power_mode_block(mode, false);
+  return false;
+}
 
 #ifdef __cplusplus
 }
