@@ -340,7 +340,7 @@ error_t ra02_get_power(trx_t * trx, uint8_t * db) {
 }
 
 error_t ra02_set_power(trx_t * trx, uint8_t db) {
-  if (db < 0 || db > RA02_MAX_PA) {
+  if (db < 1 || db > RA02_MAX_PA) {
     return E_INVAL;
   }
   UTIL_MAP_RANGE_TABLE(ra02_power_mapping_db, db, db);
