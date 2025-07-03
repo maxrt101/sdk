@@ -1,6 +1,6 @@
 /** ========================================================================= *
  *
- * @file delay.h
+ * @file sleep.h
  * @date 20-07-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
