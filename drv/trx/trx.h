@@ -286,6 +286,12 @@ __STATIC_FORCEINLINE error_t trx_recv(trx_t * trx, uint8_t * buf, size_t * size,
   return trx->fn.recv(trx, buf, size, timeout);
 }
 
+/**
+ * Callback to be called on waiting for some event
+ *
+ * @param[in] trx TRX API handle
+ */
+void trx_on_waiting(trx_t * trx);
 
 #ifdef __cplusplus
 }

@@ -15,7 +15,6 @@
 #include "drv/trx/trx.h"
 #include "time/sleep.h"
 #include "log/log.h"
-#include "wdt/wdt.h"
 #include "spi/spi.h"
 
 /* Defines ================================================================== */
@@ -301,8 +300,10 @@ error_t ra02_deinit(trx_t * trx) {
 
 error_t ra02_reset(trx_t * trx) {
   gpio_clear(trx->ra02.reset);
+  // TODO: Check delays
   sleep_ms(10);
   gpio_set(trx->ra02.reset);
+  // TODO: Check delays
   sleep_ms(5);
   return E_OK;
 }
@@ -315,10 +316,13 @@ error_t ra02_set_freq(trx_t * trx, uint32_t khz) {
   uint32_t freq = ((khz/1000) * 524288) >> 5;
 
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_FRF_MSB, freq >> 16));
+  // TODO: Check delays
   sleep_ms(5);
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_FRF_MID, freq >> 8));
+  // TODO: Check delays
   sleep_ms(5);
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_FRF_LSB, freq));
+  // TODO: Check delays
   sleep_ms(5);
 
   return E_OK;
@@ -338,12 +342,14 @@ error_t ra02_set_power(trx_t * trx, uint8_t db) {
   }
   UTIL_MAP_RANGE_TABLE(ra02_power_mapping_db, db, db);
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_PA_CFG, db));
+  // TODO: Check delays
   sleep_ms(10);
   return E_OK;
 }
 
 error_t ra02_set_sync_word(trx_t * trx, uint32_t sync_word) {
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_LORA_REG_SYNC_WORD, sync_word));
+  // TODO: Check delays
   sleep_ms(10);
   return E_OK;
 }
@@ -410,6 +416,8 @@ error_t ra02_send(trx_t * trx, uint8_t * buf, size_t size) {
     if (trx->ra02.irq_flags & RA02_LORA_IRQ_FLAGS_TX_DONE) {
       break;
     }
+
+    trx_on_waiting(trx);
   }
 
   ERROR_CHECK_RETURN(ra02_goto_op_mode(trx, RA02_OP_MODE_SLEEP));
@@ -454,6 +462,6 @@ error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout
       return E_OK;
     }
 
-    wdt_feed();
+    trx_on_waiting(trx);
   }
 }
