@@ -113,14 +113,20 @@
  * OS Context
  */
 typedef struct {
+  /** OS Context */
   os_task_ctx_t ctx;
 
+  /** Tasks linked list */
   struct {
     os_task_t * head;
     os_task_t * current;
   } task;
 
+  /** OS Cycle Counter */
   uint32_t cycles;
+
+  /** Task runs within a cycle */
+  uint32_t runs;
 } os_t;
 
 /* Variables ================================================================ */
@@ -194,6 +200,7 @@ void os_task_create(
   memset(task, 0, sizeof(*task));
 
   task->state       = OS_TASK_STATE_NONE;
+  task->priority    = 0;
   task->name        = name;
   task->stack.start = stack;
   task->stack.end   = stack + stack_size;
@@ -292,13 +299,23 @@ void os_launch(void) {
         longjmp(os.task.current->ctx.buf, 1);
       }
 
+      // Update task stat, if enabled
       UTIL_IF_1(USE_OS_STAT, os.task.current->cycles++);
+
+      // Increase task runs counter within a cycle
+      os.runs++;
     }
 
     UTIL_IF_1(OS_USE_SOFT_WDT, soft_wdt_check());
 
-    // Advance current task to the next in the task list
-    os_task_next();
+    // Advance current task to the next in the task list, only if target runs per cycles is reached
+    if (os.runs >= os.task.current->priority) {
+      // Reset task runs
+      os.runs = 0;
+
+      // Set current task to the next
+      os_task_next();
+    }
   }
 
   // Technically unreachable
@@ -475,6 +492,12 @@ os_task_t * os_task_current(void) {
   return os.task.current;
 }
 
+void os_task_set_priority(os_task_t * task, uint8_t priority) {
+  ASSERT_RETURN(task);
+
+  task->priority = priority;
+}
+
 bool os_task_iter(os_task_t ** task) {
   ASSERT_RETURN(task, false);
 
@@ -492,6 +515,7 @@ void os_task_stat(os_task_t * task, os_task_stat_t * stat) {
   ASSERT_RETURN(task && stat);
 
   stat->name       = task->name;
+  stat->priority   = task->priority;
   stat->state      = task->state;
   stat->cycles     = task->cycles;
   stat->stack_size = (uint8_t *) task->stack.end - (uint8_t *) task->stack.start;

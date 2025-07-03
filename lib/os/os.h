@@ -188,12 +188,14 @@ extern "C" {
  * @param __stack_size  Size of task stack in bytes
  * @param __fn          Task function
  * @param __arg         Task function argument. void pointer
+ * @param ...           Task priority (bigger - higher, default 0)
  */
-#define OS_CREATE_TASK(__name, __stack_size, __fn, __arg)               \
+#define OS_CREATE_TASK(__name, __stack_size, __fn, __arg, ...)          \
   uint8_t UTIL_CAT(__name, _task_stack)[__stack_size] __ALIGNED(8);     \
   os_task_t UTIL_CAT(__name, _task) = {                                 \
     .next = NULL,                                                       \
     .state = OS_TASK_STATE_NONE,                                        \
+    .priority = UTIL_IF_EMPTY(__VA_ARGS__, 0, __VA_ARGS__),             \
     .name = UTIL_STRINGIFY(__name),                                     \
     .stack.start = UTIL_CAT(__name, _task_stack),                       \
     .stack.end = UTIL_CAT(__name, _task_stack) + __stack_size,          \
@@ -264,6 +266,7 @@ typedef struct os_task_t {
   struct os_task_t *        next;
 
   os_task_state_t           state;
+  uint8_t                   priority;
   const char *              name;
 
   os_task_ctx_t             ctx;
@@ -301,6 +304,7 @@ typedef struct os_task_t {
  */
 typedef struct {
   const char *    name;
+  uint8_t         priority;
   size_t          stack_size;
   size_t          stack_used;
   size_t          cycles;
@@ -426,6 +430,13 @@ os_task_t * os_task_get(const char * name);
  * Return handle of current task
  */
 os_task_t * os_task_current(void);
+
+/**
+ * Sets task priority
+ *
+ * @param task Task handle
+ */
+void os_task_set_priority(os_task_t * task, uint8_t priority);
 
 /**
  * Yields execution
