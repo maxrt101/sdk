@@ -1,10 +1,10 @@
 /** ========================================================================= *
  *
- * @file ds28.h
+ * @file aht.h
  * @date 06-03-2025
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief AHT10 Driver
+ * @brief AHT10/15/20 Driver
  *
  *  ========================================================================= */
 #pragma once
@@ -22,45 +22,57 @@ extern "C" {
  * Temperature precision value
  * 1000 = 10^3 = 3 digits after point
  */
-#ifndef AHT10_TEMP_PRECISION
-#define AHT10_TEMP_PRECISION 1000
+#ifndef AHT_TEMP_PRECISION
+#define AHT_TEMP_PRECISION 1000
 #endif
 
 /**
  * Humidity precision value
  * 1000 = 10^3 = 3 digits after point
  */
-#ifndef AHT10_HUMIDITY_PRECISION
-#define AHT10_HUMIDITY_PRECISION 1000
+#ifndef AHT_HUMIDITY_PRECISION
+#define AHT_HUMIDITY_PRECISION 1000
 #endif
 
 /**
- * Verbose logs for AHT10
+ * Verbose logs for AHT
  */
-#ifndef AHT10_VERBOSE
-#define AHT10_VERBOSE 0
+#ifndef AHT_VERBOSE
+#define AHT_VERBOSE 0
 #endif
 
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
+/**
+ *
+ */
+typedef enum {
+  AHT_UNKNOWN,
+  AHT_10,
+  AHT_20,
+} aht_type_t;
+
 /* Types ==================================================================== */
 /**
- * AHT10 Device context
+ * AHT Device context
  */
 typedef struct {
   /** I2C Bus Context */
   i2c_t * i2c;
 
-  /** AHT10 Device Address */
+  /** AHT Device Address */
   uint16_t addr;
-} aht10_t;
+
+  /** AHT Type */
+  aht_type_t type;
+} aht_t;
 
 /**
- * AHT10 Measurement result
+ * AHT Measurement result
  */
 typedef struct {
   /**
-   * Represents AHT10 temperature reading in celsius
+   * Represents AHT temperature reading in celsius
    * A fixed point value (value.fraction)
    */
   struct {
@@ -69,56 +81,63 @@ typedef struct {
   } temp;
 
   /**
-   * Represents AHT10 humidity reading in percent
+   * Represents AHT humidity reading in percent
    * A fixed point value (value.fraction)
    */
   struct {
     uint16_t value;
     uint16_t fraction;
   } humidity;
-} aht10_measurement_t;
+} aht_measurement_t;
 
 /* Variables ================================================================ */
 /* Shared functions ========================================================= */
 /**
- * Initializer AHT10 driver
+ * Initializer AHT driver
  *
  * @param ctx Driver context
  * @param i2c Initialized I2C driver context
- * @param addr AHT10 device address
+ * @param addr AHT device address
  */
-error_t aht10_init(aht10_t * ctx, i2c_t * i2c, uint16_t addr);
+error_t aht_init(aht_t * ctx, i2c_t * i2c, uint16_t addr);
 
 /**
- * Deinitializes AHT10 driver
+ * Deinitializes AHT driver
  *
  * @param ctx Driver context
  */
-error_t aht10_deinit(aht10_t * ctx);
+error_t aht_deinit(aht_t * ctx);
 
 /**
- * Resets AHT10 device
+ * Resets AHT device
  *
  * @param ctx Driver context
  */
-error_t aht10_reset(aht10_t * ctx);
+error_t aht_reset(aht_t * ctx);
 
 /**
- * Issues measure command to AHT10 device
+ * Issues measure command to AHT device
  *
  * @param ctx Driver context
  */
-error_t aht10_measure(aht10_t * ctx);
+error_t aht_measure(aht_t * ctx);
 
 /**
- * Reads temperature and humidity values from AHT10
+ * Reads temperature and humidity values from AHT
  *
- * @note Needs aht10_measure called before
+ * @note Needs aht_measure called before
  *
  * @param ctx Driver context
  * @param measurement Measurement (humidity + temp in fixed point format)
  */
-error_t aht10_read(aht10_t * ctx, aht10_measurement_t * measurement);
+error_t aht_read(aht_t * ctx, aht_measurement_t * measurement);
+
+/**
+ * Convert AHT sensor type enum value to string
+ *
+ * @param type AHT type
+ */
+const char * aht_type_to_str(aht_type_t type);
 
 #ifdef __cplusplus
 }

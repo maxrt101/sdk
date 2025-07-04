@@ -1,26 +1,28 @@
 /** ========================================================================= *
  *
- * @file aht10.c
+ * @file aht.c
  * @date 06-03-2025
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
  *  ========================================================================= */
 
 /* Includes ================================================================= */
-#include "aht10/aht10.h"
+#include "aht/aht.h"
 #include "error/assertion.h"
 #include "util/bits.h"
 #include "log/log.h"
+#include "time/sleep.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG AHT10
+#define LOG_TAG AHT
 
-#define AHT10_CMD_INIT            0xE1
-#define AHT10_CMD_RESET           0xBA
-#define AHT10_CMD_TRIGGER_MEASURE 0xAC
+#define AHT10_CMD_INIT          0xE1
+#define AHT20_CMD_INIT          0xBE
+#define AHT_CMD_RESET           0xBA
+#define AHT_CMD_TRIGGER_MEASURE 0xAC
 
-#define POW_2_20                 1048576
-#define AHT10_TEMP_SCALER        1000
+#define POW_2_20                1048576
+#define AHT_TEMP_SCALER         1000
 
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
@@ -28,23 +30,37 @@
 /* Types ==================================================================== */
 /* Variables ================================================================ */
 /* Private functions ======================================================== */
-static error_t aht10_send(aht10_t * ctx, uint8_t * buffer, size_t size) {
+static error_t aht_send(aht_t * ctx, uint8_t * buffer, size_t size) {
   ASSERT_RETURN(ctx, E_NULL);
 
   return i2c_send(ctx->i2c, ctx->addr, buffer, size);
 }
 
-static error_t aht10_send_init(aht10_t * ctx) {
+static error_t aht_init_detect(aht_t * ctx) {
   ASSERT_RETURN(ctx, E_NULL);
 
   uint8_t buffer[3] = {
     AHT10_CMD_INIT, 0x08, 0x00
   };
 
-  return aht10_send(ctx, buffer, sizeof(buffer));
+  if (aht_send(ctx, buffer, sizeof(buffer)) == E_OK) {
+    ctx->type = AHT_10;
+    return E_OK;
+  }
+
+  buffer[0] = AHT20_CMD_INIT;
+
+  if (aht_send(ctx, buffer, sizeof(buffer)) == E_OK) {
+    ctx->type = AHT_20;
+    return E_OK;
+  }
+
+  ctx->type = AHT_UNKNOWN;
+
+  return E_FAILED;
 }
 
-static error_t aht10_parse_temp(aht10_t * ctx, uint8_t * data, aht10_measurement_t * measurement) {
+static error_t aht_parse_temp(aht_t * ctx, uint8_t * data, aht_measurement_t * measurement) {
   ASSERT_RETURN(ctx && data && measurement, E_NULL);
 
   uint32_t raw_temp =
@@ -53,19 +69,19 @@ static error_t aht10_parse_temp(aht10_t * ctx, uint8_t * data, aht10_measurement
                   data[5];
 
   // FIXME: Check with reference values
-  measurement->temp.value = (((int32_t) raw_temp * AHT10_TEMP_SCALER / POW_2_20) * 200) / AHT10_TEMP_SCALER - 50;
+  measurement->temp.value = (((int32_t) raw_temp * AHT_TEMP_SCALER / POW_2_20) * 200) / AHT_TEMP_SCALER - 50;
   // FIXME: Fraction is probably wrong
-  measurement->temp.fraction = ((((int32_t) raw_temp * AHT10_TEMP_PRECISION / POW_2_20) * 200) - 50) % AHT10_TEMP_PRECISION;
+  measurement->temp.fraction = ((((int32_t) raw_temp * AHT_TEMP_PRECISION / POW_2_20) * 200) - 50) % AHT_TEMP_PRECISION;
 
-#if AHT10_VERBOSE
-  log_debug("aht10_parse_temp: raw=0x%x parsed=%d.%d",
+#if AHT_VERBOSE
+  log_debug("aht_parse_temp: raw=0x%x parsed=%d.%d",
     raw_temp, measurement->temp.value, measurement->temp.fraction);
 #endif
 
   return E_OK;
 }
 
-static error_t aht10_parse_humidity(aht10_t * ctx, uint8_t * data, aht10_measurement_t * measurement) {
+static error_t aht_parse_humidity(aht_t * ctx, uint8_t * data, aht_measurement_t * measurement) {
   ASSERT_RETURN(ctx && data && measurement, E_NULL);
 
   uint32_t raw_humidity = (
@@ -75,10 +91,10 @@ static error_t aht10_parse_humidity(aht10_t * ctx, uint8_t * data, aht10_measure
     ) >> 4;
 
   measurement->humidity.value = raw_humidity * 100 / POW_2_20;
-  measurement->humidity.fraction = raw_humidity * 100 * AHT10_HUMIDITY_PRECISION / POW_2_20 % AHT10_HUMIDITY_PRECISION;
+  measurement->humidity.fraction = raw_humidity * 100 * AHT_HUMIDITY_PRECISION / POW_2_20 % AHT_HUMIDITY_PRECISION;
 
-#if AHT10_VERBOSE
-  log_debug("aht10_parse_humidity: raw=0x%x parsed=%d.%d",
+#if AHT_VERBOSE
+  log_debug("aht_parse_humidity: raw=0x%x parsed=%d.%d",
     raw_humidity, measurement->humidity.value, measurement->humidity.fraction);
 #endif
 
@@ -86,62 +102,59 @@ static error_t aht10_parse_humidity(aht10_t * ctx, uint8_t * data, aht10_measure
 }
 
 /* Shared functions ========================================================= */
-error_t aht10_init(aht10_t * ctx, i2c_t * i2c, uint16_t addr) {
+error_t aht_init(aht_t * ctx, i2c_t * i2c, uint16_t addr) {
   ASSERT_RETURN(ctx && i2c, E_NULL);
 
   ctx->i2c = i2c;
   ctx->addr = addr;
 
-  ERROR_CHECK_RETURN(aht10_reset(ctx));
+  ERROR_CHECK_RETURN(aht_reset(ctx));
 
-  error_t err = aht10_send_init(ctx);
-
-#if USE_AHT10_IGNORE_INIT_ERROR
-  log_warn("aht10_init: %s, ignorring...", error2str(err));
-  return E_OK;
-#else
-  return err;
-#endif
+  return aht_init_detect(ctx);
 }
 
-error_t aht10_deinit(aht10_t * ctx) {
+error_t aht_deinit(aht_t * ctx) {
   ASSERT_RETURN(ctx, E_NULL);
 
   return E_NOTIMPL;
 }
 
-error_t aht10_reset(aht10_t * ctx) {
+error_t aht_reset(aht_t * ctx) {
   ASSERT_RETURN(ctx, E_NULL);
 
   uint8_t buffer[1] = {
-    AHT10_CMD_RESET
+    AHT_CMD_RESET
   };
 
-  return aht10_send(ctx, buffer, sizeof(buffer));
+  error_t err = aht_send(ctx, buffer, sizeof(buffer));
+
+  sleep_ms(20);
+
+  return err;
 }
 
-error_t aht10_measure(aht10_t * ctx) {
+error_t aht_measure(aht_t * ctx) {
   ASSERT_RETURN(ctx, E_NULL);
 
   uint8_t buffer[3] = {
-    AHT10_CMD_TRIGGER_MEASURE, 0x33, 0x00
+    AHT_CMD_TRIGGER_MEASURE, 0x33, 0x00
   };
 
-  return aht10_send(ctx, buffer, sizeof(buffer));
+  return aht_send(ctx, buffer, sizeof(buffer));
 }
 
-error_t aht10_read(aht10_t * ctx, aht10_measurement_t * measurement) {
+error_t aht_read(aht_t * ctx, aht_measurement_t * measurement) {
   ASSERT_RETURN(ctx && measurement, E_NULL);
 
   uint8_t data[6] = {0};
 
   ERROR_CHECK_RETURN(i2c_recv(ctx->i2c, ctx->addr, data, sizeof(data)));
 
-#if AHT10_VERBOSE
+#if AHT_VERBOSE
 #define FH2 "%02x "
 #define D(i) data[i]
   log_info(
-    "aht10_read: "
+    "aht_read: "
     FH2 FH2 FH2 FH2 FH2 FH2,
     D(0), D(1), D(2), D(3), D(4), D(5)
   );
@@ -150,10 +163,24 @@ error_t aht10_read(aht10_t * ctx, aht10_measurement_t * measurement) {
 #endif
 
   if ((data[0] & 0x80) == 0) {
-    ERROR_CHECK_RETURN(aht10_parse_temp(ctx, data, measurement));
-    ERROR_CHECK_RETURN(aht10_parse_humidity(ctx, data, measurement));
+    ERROR_CHECK_RETURN(aht_parse_temp(ctx, data, measurement));
+    ERROR_CHECK_RETURN(aht_parse_humidity(ctx, data, measurement));
     return E_OK;
   }
 
   return E_CANCELLED;
+}
+
+const char * aht_type_to_str(aht_type_t type) {
+  switch (type) {
+    case AHT_10:
+      return "AHT10";
+
+    case AHT_20:
+      return "AHT20";
+
+    case AHT_UNKNOWN:
+    default:
+      return "UNK";
+  }
 }
