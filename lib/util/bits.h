@@ -22,22 +22,22 @@ extern "C" {
 /**
  * Sets bit
  */
-#define UTIL_BIT_SET(val, bit) (val | ((uint32_t) 1 << bit))
+#define UTIL_BIT_SET(val, bit) ((val) | ((uint32_t) 1 << (bit)))
 
 /**
  * Clears bit
  */
-#define UTIL_BIT_CLEAR(val, bit) (val & ~((uint32_t) 1 << bit))
+#define UTIL_BIT_CLEAR(val, bit) ((val) & ~((uint32_t) 1 << (bit)))
 
 /**
  * Toggles bit
  */
-#define UTIL_BIT_TOGGLE(val, bit) (val ^ ((uint32_t) 1 << bit))
+#define UTIL_BIT_TOGGLE(val, bit) ((val) ^ ((uint32_t) 1 << (bit)))
 
 /**
  * Gets bit
  */
-#define UTIL_BIT_GET(val, bit) ((val & ((uint32_t) 1 << bit)) ? 1 : 0)
+#define UTIL_BIT_GET(val, bit) (((val) & ((uint32_t) 1 << (bit))) ? 1 : 0)
 
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
