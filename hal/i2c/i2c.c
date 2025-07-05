@@ -26,6 +26,9 @@ error_t i2c_detect(i2c_t * i2c, i2c_detect_result_t result) {
   for (uint8_t i = 0; i < 128; ++i) {
     uint8_t data = 0;
 
+    // TODO: Send alone should work
+    //       Even better - should add an ability to select detection method
+    //       AUTO being the default. Look at i2cdetect.c mode
     i2c_send(i2c, i, &data, 1);
     error_t err = i2c_recv(i2c, i, &data, 1);
 
