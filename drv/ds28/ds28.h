@@ -1,10 +1,10 @@
 /** ========================================================================= *
  *
- * @file ds28ea00.h
+ * @file ds28.h
  * @date 23-07-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief DS28EA00 Driver
+ * @brief DS28 Driver
  *
  * TODO: Separate generic DS28 logic from chain-mode
  *
@@ -21,70 +21,70 @@ extern "C" {
 
 /* Defines ================================================================== */
 /**
- * Can be passed to functions (convert_temp, read_temp, etc)
+ * Can be passed to functions (convert_temp, read_temp, etc.)
  * to select all devices
  */
-#define DS28EA00_TARGET_ALL NULL
+#define DS28_TARGET_ALL NULL
 
 /**
  * Max devices (size of devices buffer)
  */
-#ifndef DS28EA00_MAX_DEVICES
-#define DS28EA00_MAX_DEVICES 4
+#ifndef DS28_MAX_DEVICES
+#define DS28_MAX_DEVICES 4
 #endif
 
 /**
  * Temperature precision value
  * 1000 = 10^3 = 3 digits after point
  */
-#ifndef DS28EA00_PRECISION
-#define DS28EA00_PRECISION 1000
+#ifndef DS28_PRECISION
+#define DS28_PRECISION 1000
 #endif
 
 /**
  * Temperature scaler value
  * Temperature read returns 2 bytes, which have to be scaled correctly
- * (divide by DS28EA00_SCALER)
+ * (divide by DS28_SCALER)
  */
-#ifndef DS28EA00_SCALER
-#define DS28EA00_SCALER 16
+#ifndef DS28_SCALER
+#define DS28_SCALER 16
 #endif
 
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
 /**
- * DS28EA00 Power Mode
+ * DS28 Power Mode
  *   1W - device uses OneWire line for parasitic power supply
  *   VDD - device uses dedicated power supply line
  */
 typedef enum {
-  DS28EA00_PWR_MODE_1W  = 0,
-  DS28EA00_PWR_MODE_VDD = 0xFF,
-} ds28ea00_pwr_mode_t;
+  DS28_PWR_MODE_1W  = 0,
+  DS28_PWR_MODE_VDD = 0xFF,
+} ds28_pwr_mode_t;
 
 /**
- * DS28EA00 Temperature Resolution
+ * DS28 Temperature Resolution
  */
 typedef enum {
-  DS28EA00_RESOLUTION_9_BIT  = 0x1F,
-  DS28EA00_RESOLUTION_10_BIT = 0x3F,
-  DS28EA00_RESOLUTION_11_BIT = 0x5F,
-  DS28EA00_RESOLUTION_12_BIT = 0x7F
-} ds28ea00_resolution_t;
+  DS28_RESOLUTION_9_BIT  = 0x1F,
+  DS28_RESOLUTION_10_BIT = 0x3F,
+  DS28_RESOLUTION_11_BIT = 0x5F,
+  DS28_RESOLUTION_12_BIT = 0x7F
+} ds28_resolution_t;
 
 /**
- * DS28EA00 Driver Init Mode
+ * DS28 Driver Init Mode
  *   DEFAULT uses OneWire search algorithm
- *   CHAIN uses DS28EA00 chain detection algorithm
+ *   CHAIN uses DS28 chain detection algorithm
  */
 typedef enum {
-  DS28EA00_INIT_MODE_DEFAULT = 0,
-  DS28EA00_INIT_MODE_CHAIN
+  DS28_INIT_MODE_DEFAULT = 0,
+  DS28_INIT_MODE_CHAIN
 } ds28ae00_init_mode_t;
 
 /* Types ==================================================================== */
 /**
- * Represents DS28EA00 device
+ * Represents DS28 device
  */
 typedef struct {
   /** OneWire Device context */
@@ -94,7 +94,7 @@ typedef struct {
   uint32_t chain_position;
 
   /** Power mode of DS28 (it can be powered from dedicated VDD or from 1W line) */
-  ds28ea00_pwr_mode_t pwr_mode;
+  ds28_pwr_mode_t pwr_mode;
 
   /** Configurable contents of scratchpad */
   struct {
@@ -109,100 +109,100 @@ typedef struct {
       uint8_t config_register;
     };
   } scratchpad;
-} ds28ea00_device_t;
+} ds28_device_t;
 
 /**
- * Context of DS28EA00 driver
+ * Context of DS28 driver
  */
 typedef struct {
   onewire_t * ow;
 
   struct {
-    ds28ea00_device_t items[DS28EA00_MAX_DEVICES];
+    ds28_device_t items[DS28_MAX_DEVICES];
     size_t size;
   } devices;
-} ds28ea00_t;
+} ds28_t;
 
 /**
- * Represents DS28EA00 temperature reading in celsius
+ * Represents DS28 temperature reading in celsius
  * A fixed point value (value.fraction)
  */
 typedef struct {
   uint16_t value;
   uint16_t fraction;
-} ds28ea00_temp_t;
+} ds28_temp_t;
 
 /* Variables ================================================================ */
 /* Shared functions ========================================================= */
 /**
- * Initializes DS28EA00 driver
- * Detects all devices on the ow bus that have DS28EA00 family code
+ * Initializes DS28 driver
+ * Detects all devices on the ow bus that have DS28 family code
  *
  * @param[in] ctx Driver context
  * @param[in] ow Initialized OneWire driver context
  */
-error_t ds28ea00_init(ds28ea00_t * ctx, onewire_t * ow,
+error_t ds28_init(ds28_t * ctx, onewire_t * ow,
                       ds28ae00_init_mode_t init_mode);
 
 /**
- * Deinitializes DS28EA00 driver
+ * Deinitializes DS28 driver
  *
  * @param[in] ctx Driver context
  */
-error_t ds28ea00_deinit(ds28ea00_t * ctx);
+error_t ds28_deinit(ds28_t * ctx);
 
 /**
- * Searches for DS28EA00 devices on the bus
+ * Searches for DS28 devices on the bus
  *
  * @param[in] ctx Driver context
  * @param[out]    devices Pointer to array of devices
  * @param[in/out] size Pointer to devices array size,
  *                     outputs number of found devices
  */
-error_t ds28ea00_detect(ds28ea00_t * ctx, ds28ea00_device_t * devices,
+error_t ds28_detect(ds28_t * ctx, ds28_device_t * devices,
                         size_t * size);
 
 /**
- * Detects sequence of DS28EA00 devices
+ * Detects sequence of DS28 devices
  *
  * @param[in] ctx Driver context
  * @param[out]     devices Pointer to array of devices
  * @param[in/out]  size Pointer to devices array size,
  *                      outputs number of found devices
  */
-error_t ds28ea00_sequence_detect(ds28ea00_t * ctx, ds28ea00_device_t * devices,
+error_t ds28_sequence_detect(ds28_t * ctx, ds28_device_t * devices,
                                  size_t * size);
 
 /**
  * Issues convert temp command to target device
  *
  * @param[in] ctx Driver context
- * @param[in] target Target to send command to (can be DS28EA00_TARGET_ALL
+ * @param[in] target Target to send command to (can be DS28_TARGET_ALL
  *                   to send to all devices)
  */
-error_t ds28ea00_convert_temp(ds28ea00_t * ctx, ds28ea00_device_t * target);
+error_t ds28_convert_temp(ds28_t * ctx, ds28_device_t * target);
 
 /**
  * Gathers temp reading from target device
  *
  * @param[in] ctx Driver context
- * @param[in] target Target to send command to (can be DS28EA00_TARGET_ALL
+ * @param[in] target Target to send command to (can be DS28_TARGET_ALL
  *                   to send to all devices)
  * @prarm[out] temp Result of temperature reading
  */
-error_t ds28ea00_read_temp(ds28ea00_t * ctx, ds28ea00_device_t * target,
-                           ds28ea00_temp_t * temp);
+error_t ds28_read_temp(ds28_t * ctx, ds28_device_t * target,
+                           ds28_temp_t * temp);
 
 /**
  * Reads power mode from target device
  *
  * @param[in] ctx Driver context
- * @param[in] target Target to send command to (can be DS28EA00_TARGET_ALL
+ * @param[in] target Target to send command to (can be DS28_TARGET_ALL
  *                   to send to all devices)
- * @prarm[out] pwr Power mode (see @ref ds28ea00_pwr_mode_t)
+ * @prarm[out] pwr Power mode (see @ref ds28_pwr_mode_t)
  */
-error_t ds28ea00_read_power_mode(ds28ea00_t * ctx, ds28ea00_device_t * target,
-                                 ds28ea00_pwr_mode_t * pwr);
+error_t ds28_read_power_mode(ds28_t * ctx, ds28_device_t * target,
+                                 ds28_pwr_mode_t * pwr);
 
 /**
  * Sets temperature alarm
@@ -211,7 +211,7 @@ error_t ds28ea00_read_power_mode(ds28ea00_t * ctx, ds28ea00_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp Alarm temperature value
  */
-error_t ds28ea00_set_alarm(ds28ea00_t * ctx, ds28ea00_device_t * target,
+error_t ds28_set_alarm(ds28_t * ctx, ds28_device_t * target,
                            uint16_t alarm_temp);
 
 /**
@@ -221,7 +221,7 @@ error_t ds28ea00_set_alarm(ds28ea00_t * ctx, ds28ea00_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp_lo Alarm temperature LO byte value
  */
-error_t ds28ea00_set_alarm_lo(ds28ea00_t * ctx, ds28ea00_device_t * target,
+error_t ds28_set_alarm_lo(ds28_t * ctx, ds28_device_t * target,
                               uint8_t alarm_temp_lo);
 
 /**
@@ -231,7 +231,7 @@ error_t ds28ea00_set_alarm_lo(ds28ea00_t * ctx, ds28ea00_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp_hi Alarm temperature HI byte value
  */
-error_t ds28ea00_set_alarm_hi(ds28ea00_t * ctx, ds28ea00_device_t * target,
+error_t ds28_set_alarm_hi(ds28_t * ctx, ds28_device_t * target,
                               uint8_t alarm_temp_hi);
 
 /**
@@ -241,8 +241,8 @@ error_t ds28ea00_set_alarm_hi(ds28ea00_t * ctx, ds28ea00_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] resolution Temperature resolution
  */
-error_t ds28ea00_set_resolution(ds28ea00_t * ctx, ds28ea00_device_t * target,
-                                ds28ea00_resolution_t resolution);
+error_t ds28_set_resolution(ds28_t * ctx, ds28_device_t * target,
+                                ds28_resolution_t resolution);
 
 #ifdef __cplusplus
 }
