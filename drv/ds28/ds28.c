@@ -17,7 +17,7 @@
 #define LOG_TAG DS28
 
 /** DS28 Family code, used to detect DS28 devices on the line */
-#define DS28_FAMILY_CODE 0x42
+#define DS28EA00_FAMILY_CODE 0x42
 
 /** DS28 Specific commands */
 #define DS28_CMD_CONVERT_TEMP     0x44
@@ -152,7 +152,7 @@ error_t ds28_detect(
 
   size_t devices_idx = 0;
   for (size_t i = 0; i < found; ++i) {
-    if (all_devices[i].rom.family_code == DS28_FAMILY_CODE) {
+    if (all_devices[i].rom.family_code == DS28EA00_FAMILY_CODE) {
       memcpy(&devices[devices_idx].ow_dev, &all_devices[i], sizeof(onewire_device_t));
 
       if (++devices_idx > *size) {
