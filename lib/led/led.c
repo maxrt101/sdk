@@ -223,8 +223,8 @@ error_t led_rgb_ctl(led_t * led, uint8_t r, uint8_t g, uint8_t b) {
 
   // TODO: Create 3 PWM instances for each pin, and set brightness with them for each pin
   r ? gpio_ctx_set(&led->rgb.r) : gpio_ctx_clear(&led->rgb.r);
-  r ? gpio_ctx_set(&led->rgb.g) : gpio_ctx_clear(&led->rgb.g);
-  r ? gpio_ctx_set(&led->rgb.b) : gpio_ctx_clear(&led->rgb.b);
+  g ? gpio_ctx_set(&led->rgb.g) : gpio_ctx_clear(&led->rgb.g);
+  b ? gpio_ctx_set(&led->rgb.b) : gpio_ctx_clear(&led->rgb.b);
 
   return E_OK;
 }

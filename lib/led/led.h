@@ -225,7 +225,7 @@ error_t led_init(led_t * led, gpio_t gpio, gpio_polarity_t polarity, queue_t * q
  * @param[in] gpios Initialized GPIO struct that holds LED Pin info for R G & B pins
  * @param[in] queue Queue for patterns
  */
-error_t led_rgb_init(led_t * led, led_rgb_init_t * gpios, queue_t * queue);
+error_t led_init_rgb(led_t * led, led_rgb_init_t * gpios, queue_t * queue);
 
 /**
  * Turns LED on with regards to polarity
