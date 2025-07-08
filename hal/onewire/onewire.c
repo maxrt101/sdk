@@ -97,7 +97,7 @@ error_t onewire_reset(onewire_t * ctx) {
   uint8_t presence = ctx->trsp.recv(ctx->trsp.ctx);
   ctx->trsp.set_baudrate(ctx->trsp.ctx, OW_BAUDRATE_OPERATIONAL);
 
-  log_info("onewire_reset: 0x%02x", presence);
+  log_info("reset: 0x%02x", presence);
 
   return presence == OW_RESET ? E_NORESP : E_OK;
 }
@@ -133,6 +133,8 @@ error_t onewire_recv_byte(onewire_t * ctx, uint8_t * data) {
       *data |= (1 << i);
     }
   }
+
+  log_debug("recv: 0x%02x", *data);
 
   return E_OK;
 }
