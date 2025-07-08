@@ -88,6 +88,10 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
     // Read 1 char from UART
     vfs_read(tty->file, (uint8_t *) &c, 1);
 
+    if (c == TTY_ASCII_KEY_ESC) {
+      continue;
+    }
+
     // If char is backspace
     if (c == TTY_ASCII_KEY_BACKSPACE) {
       // If string buffer is not empty
@@ -140,6 +144,10 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
 
     // Read 1 char from UART
     ERROR_CHECK_RETURN(vfs_read(tty->file, (uint8_t *) &c, 1));
+
+    if (c == TTY_ASCII_KEY_ESC) {
+      return E_AGAIN;
+    }
 
     // If char is backspace
     if (c == TTY_ASCII_KEY_BACKSPACE) {

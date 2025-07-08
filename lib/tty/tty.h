@@ -35,6 +35,13 @@ extern "C" {
 #endif
 
 /**
+ * ASCII value for ESC
+ */
+#ifndef TTY_ASCII_KEY_ESC
+#define TTY_ASCII_KEY_ESC 0x1B
+#endif
+
+/**
  * UART sends CR if enter is pressed
  */
 #ifndef TTY_ASCII_KEY_ENTER
