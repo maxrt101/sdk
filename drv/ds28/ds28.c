@@ -217,7 +217,7 @@ error_t ds28_sequence_detect(
 
     onewire_recv_byte(ctx->ow, &data);
 
-    /* FIXME: On STM32L051 and DS28
+    /* FIXME: On STM32L051 and DS28EA00
      *        chain detection algorithm reads first byte of every response
      *        with lsb bit flipped, although logic analyzer reads correct
      *        values. Fast fix is to detect flipped bits and flip them back
@@ -282,6 +282,11 @@ error_t ds28_read_temp(
 
   onewire_recv_byte(ctx->ow, &temp_lsb);
   onewire_recv_byte(ctx->ow, &temp_msb);
+
+  // Sanity check
+  if (temp_lsb == 0xFF && temp_msb == 0xFF) {
+    return E_INVAL;
+  }
 
   uint16_t temp_val = ((uint16_t) temp_msb << 8) | temp_lsb;
 
