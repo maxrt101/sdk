@@ -239,12 +239,12 @@ void os_launch(void) {
 
 #if USE_MAX_CYCLES
     if (os.cycles == MAX_CYCLES) {
-      os_abort("debug max cycles reached");
+      os_abort("Debug max cycles reached");
     }
 #endif
 
 #if USE_OS_SLEEP_AFTER_CYCLE
-    if (os.cycles && os.cycles % OS_SLEEP_AFTER_CYCLES == 0) {
+    if (os.task.current == os.task.head) {
       os_power_mode_change(OS_SLEEP_MODE);
     }
 #endif
@@ -284,7 +284,7 @@ void os_launch(void) {
     OS_LOG_TRACE(TASK_HANDLE, "Task %p '%s' (%s)",
       os.task.current, os.task.current->name, os_task_state_to_str(os.task.current->state));
 
-    // If task is waiting on a timeout, and that timeout is expired - make in ready again
+    // If task is waiting on a timeout, and that timeout is expired - make it ready again
     if (os.task.current->state == OS_TASK_STATE_WAITING && timeout_is_expired(&os.task.current->wait_timeout)) {
       os.task.current->state = OS_TASK_STATE_READY;
     }
