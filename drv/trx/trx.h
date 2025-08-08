@@ -16,6 +16,7 @@ extern "C" {
 /* Includes ================================================================= */
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include "hal/spi/spi.h"
 #include "hal/gpio/gpio.h"
@@ -35,6 +36,18 @@ extern "C" {
 
 /* Macros =================================================================== */
 /* Enums ==================================================================== */
+typedef enum trx_ioctl_cmd_t {
+  /**
+   * Reserved value
+   */
+  TRX_IOCTL_CMD_RESERVED_0 = 0,
+
+  /**
+   * Set RA02 Spreading Factor
+   */
+  TRX_IOCTL_CMD_SET_SF,
+} trx_ioctl_cmd_t;
+
 /* Types ==================================================================== */
 /**
  * TRX Config
@@ -73,6 +86,7 @@ typedef struct trx_fn_s {
   error_t (*irq_handler)(trx_t * trx);
   error_t (*send)(trx_t * trx, uint8_t * buf, size_t size);
   error_t (*recv)(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
+  error_t (*ioctl)(trx_t * trx, int cmd, va_list args);
 } trx_fn_t;
 
 /**
@@ -284,6 +298,24 @@ __STATIC_FORCEINLINE error_t trx_send(trx_t * trx, uint8_t * buf, size_t size) {
 __STATIC_FORCEINLINE error_t trx_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout) {
   ASSERT_RETURN(trx && buf && size, E_NULL);
   return trx->fn.recv(trx, buf, size, timeout);
+}
+
+/**
+ * Receives data by trx
+ *
+ * @note trx->fn must be filled
+ *
+ * @param[in]     trx TRX API handle
+ * @param[in]     cmd IOCTL command, @ref trx_ioctl_cmd_t
+ * @param[in/out] ... Var Args
+ */
+static inline error_t trx_ioctl(trx_t * trx, int cmd, ...) {
+  ASSERT_RETURN(trx, E_NULL);
+  va_list args;
+  va_start(args, cmd);
+  error_t err = trx->fn.ioctl(trx, cmd, args);
+  va_end(args);
+  return err;
 }
 
 /**

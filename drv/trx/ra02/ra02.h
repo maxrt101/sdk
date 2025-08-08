@@ -16,6 +16,7 @@ extern "C" {
 /* Includes ================================================================= */
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include "hal/spi/spi.h"
 #include "hal/gpio/gpio.h"
@@ -86,6 +87,7 @@ error_t ra02_get_rssi(trx_t * trx, int16_t * rssi);
 error_t ra02_irq_handler(trx_t * trx);
 error_t ra02_send(trx_t * trx, uint8_t * buf, size_t size);
 error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout);
+error_t ra02_ioctl(trx_t * trx, int cmd, va_list args);
 
 #ifdef __cplusplus
 }

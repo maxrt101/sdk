@@ -107,6 +107,7 @@ trx_fn_t TRX_RA02_FN = {
     .irq_handler = ra02_irq_handler,
     .send = ra02_send,
     .recv = ra02_recv,
+    .ioctl = ra02_ioctl,
 };
 
 /**
@@ -252,7 +253,7 @@ static error_t ra02_set_rx_symbol_timeout(trx_t * trx, uint16_t value) {
  */
 static error_t ra02_set_sf(trx_t * trx, uint8_t sf) {
   uint8_t data;
-  sf = UTIL_CAP(sf, 7, 12);
+  sf = UTIL_CAP(sf, 6, 12);
   ERROR_CHECK_RETURN(ra02_read_reg(trx, RA02_LORA_REG_MODEM_CFG_2, &data));
   // TODO: define modem cfg configuration values
   return ra02_write_reg(trx, RA02_LORA_REG_MODEM_CFG_2, (sf << 4) | data);
@@ -471,5 +472,15 @@ error_t ra02_recv(trx_t * trx, uint8_t * buf, size_t * size, timeout_t * timeout
     }
 
     trx_on_waiting(trx);
+  }
+}
+
+error_t ra02_ioctl(trx_t * trx, int cmd, va_list args) {
+  switch (cmd) {
+    case TRX_IOCTL_CMD_SET_SF:
+      return ra02_set_sf(trx, va_arg(args, int));
+
+    default:
+      return E_NOTIMPL;
   }
 }
