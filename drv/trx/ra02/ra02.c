@@ -341,9 +341,9 @@ error_t ra02_get_power(trx_t * trx, uint8_t * db) {
 }
 
 error_t ra02_set_power(trx_t * trx, uint8_t db) {
-  if (db < 1 || db > RA02_MAX_PA) {
-    return E_INVAL;
-  }
+  if (db < 1) { db = 1; }
+  if (db > RA02_MAX_PA) { db = RA02_MAX_PA; }
+
   UTIL_MAP_RANGE_TABLE(ra02_power_mapping_db, db, db);
   ERROR_CHECK_RETURN(ra02_write_reg(trx, RA02_REG_PA_CFG, db));
   // TODO: Check delays
