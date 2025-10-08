@@ -33,7 +33,7 @@ macro(project_init)
         message(FATAL_ERROR "PROJECT_NAME not found, set it before calling project_init")
     endif ()
 
-    if (NOT DEFINED BOARD)
+    if ((NOT DEFINED PROJECT_SKIP_BOARD) AND (NOT DEFINED BOARD))
         message(FATAL_ERROR "Need to specify board in CMakePresets.json")
     endif ()
 
@@ -51,7 +51,9 @@ macro(project_init)
     set(PROJECT_LINK_FLAGS "")
 
     # Include board
-    include(${PROJECT_DIR}/boards/${BOARD}/board.cmake)
+    if (NOT DEFINED PROJECT_SKIP_BOARD)
+        include(${PROJECT_DIR}/boards/${BOARD}/board.cmake)
+    endif ()
 
     if (${CMAKE_BUILD_TYPE} STREQUAL DEBUG)
         project_add_define("USE_DEBUG=1")
