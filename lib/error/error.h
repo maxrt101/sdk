@@ -40,6 +40,8 @@ typedef enum {
   E_NOMEM,        /** No memory left */
   E_OUTOFBOUNDS,  /** Out Of Bounds Access */
   E_NOHANDLER,    /** No handler for operation */
+  E_INUSE,        /** Resource already used */
+  E_IO,           /** I/O Error */
 } error_t;
 
 /* Types ==================================================================== */
