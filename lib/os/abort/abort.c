@@ -23,7 +23,7 @@ __NO_RETURN void os_abort(const char * msg, ...) {
   va_list args;
   va_start(args, msg);
   log_fatal("%s        SYSTEM ABORT        %s", COLOR_RED_BG, COLOR_RESET);
-  vlog_fmt(LOG_FATAL, msg, args);
+  vlog_fmt(__FILE__, __LINE__, LOG_FATAL, NULL, msg, args);
   va_end(args);
   os_on_abort();
   os_reset(OS_RESET_WDG);
