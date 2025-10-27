@@ -110,9 +110,9 @@ extern "C" {
  *             Array variable for array will be named name+_vfs_node_pool_nodes
  * @param size Size of pool in elements
  */
-#define VFS_DECLARE_NODE_POOL(name, size)                                       \
-  vfs_node_container_t UTIL_CAT(name, _vfs_node_pool_nodes)[size] = {0};        \
-  vfs_node_pool_t name = {UTIL_CAT(name, _vfs_node_pool_nodes), size}
+#define VFS_DECLARE_NODE_POOL(__name, __size)                                       \
+  vfs_node_container_t UTIL_CAT(__name, _vfs_node_pool_nodes)[__size] = {0};        \
+  vfs_node_pool_t __name = {UTIL_CAT(__name, _vfs_node_pool_nodes), __size}
 
 /**
  * Declares table pool for VFS instance
@@ -124,9 +124,12 @@ extern "C" {
  *             name+_vfs_table_pool_nodes
  * @param size Size of pool in elements
  */
-#define VFS_DECLARE_TABLE_POOL(name, size)                                      \
-  vfs_table_container_t UTIL_CAT(name, _vfs_table_pool_nodes)[size] = {0};      \
-  vfs_table_pool_t name = {UTIL_CAT(name, _vfs_table_pool_nodes), size}
+#define VFS_DECLARE_TABLE_POOL(__name, __size)                                      \
+  vfs_table_container_t UTIL_CAT(__name, _vfs_table_pool_nodes)[__size] = {0};      \
+  vfs_table_pool_t __name = {UTIL_CAT(__name, _vfs_table_pool_nodes), __size}
+
+#define VFS_WITH(__vfs, __name, __path) \
+  for (vfs_file_t * __name = vfs_open(__vfs, __path); __name; (vfs_close(__name), __name = NULL))
 
 /* Enums ==================================================================== */
 /**
@@ -168,8 +171,16 @@ typedef enum {
  * For internal usage
  */
 typedef enum {
-  VFS_NODE_FLAG_NONE      = 0,
-  VFS_NODE_FLAG_ALLOCATED = 1 << 0,
+  VFS_NODE_FLAG_NONE        = 0,
+
+  /** Node is dynamically allocated and should be freed */
+  VFS_NODE_FLAG_ALLOCATED   = 1 << 0,
+
+  /** File can be opened multiple times simultaneously */
+  VFS_NODE_FLAG_MULTI_OPEN  = 1 << 1,
+
+  /** File is opened */
+  VFS_NODE_FLAG_OPENED      = 1 << 2,
 } vfs_node_flags_t;
 
 /* Types ==================================================================== */
@@ -464,11 +475,21 @@ error_t vfs_path_parent(char * path);
 error_t vfs_path_name(char * path);
 
 /**
+ * Retrieves file size from opened file (if file is VFS_FILE)
  *
- * @param file
- * @return
+ * @param file File handle
+ * @return File size
  */
 size_t vfs_get_file_size(vfs_file_t * file);
+
+/**
+ * Set/clear multi open flag that allows for file to be opened multiple times
+ * simultaneously
+ *
+ * @param file File handle
+ * @param flag True to set, false to clear
+ */
+error_t vfs_set_multi_open_flag(vfs_file_t * file, bool flag);
 
 /**
  * Retrieves name (last token) from file
@@ -478,9 +499,10 @@ size_t vfs_get_file_size(vfs_file_t * file);
 const char * vfs_get_file_name(vfs_file_t * file);
 
 /**
+ * Converts node type enum value to string
  *
- * @param type
- * @return
+ * @param type Node type
+ * @return Name of node type
  */
 const char * vfs_node_type_to_string(vfs_node_type_t type);
 

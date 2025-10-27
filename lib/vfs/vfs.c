@@ -627,6 +627,18 @@ size_t vfs_get_file_size(vfs_file_t * file) {
   return 0;
 }
 
+error_t vfs_set_multi_open_flag(vfs_file_t * file, bool flag) {
+  ASSERT_RETURN(file, E_NULL);
+
+  if (flag) {
+    file->head.flags |= VFS_NODE_FLAG_MULTI_OPEN;
+  } else {
+    file->head.flags &= !VFS_NODE_FLAG_MULTI_OPEN;
+  }
+
+  return E_OK;
+}
+
 const char * vfs_get_file_name(vfs_file_t * file) {
   ASSERT_RETURN(file, NULL);
 
@@ -877,6 +889,10 @@ vfs_file_t * vfs_open(vfs_t * vfs, const char * path) {
 
   vfs_node_t * node = vfs_resolve_link(vfs, vfs_find_node(vfs, path));
 
+  if (node->head.flags & VFS_NODE_FLAG_OPENED && !(node->head.flags & VFS_NODE_FLAG_MULTI_OPEN)) {
+    return NULL;
+  }
+
   switch (node->head.type) {
     case VFS_FILE:
       node->file.data.offset = 0;
@@ -892,6 +908,8 @@ vfs_file_t * vfs_open(vfs_t * vfs, const char * path) {
       break;
   }
 
+  node->head.flags |= VFS_NODE_FLAG_OPENED;
+
   return node;
 }
 
@@ -905,6 +923,8 @@ error_t vfs_close(vfs_file_t * file) {
   } else if (file->head.type == VFS_FILE) {
     file->file.data.offset = 0;
   }
+
+  file->head.flags &= ~VFS_NODE_FLAG_OPENED;
 
   // TODO: ???
 
