@@ -22,9 +22,16 @@ extern "C" {
 /* Defines ================================================================== */
 /* Macros =================================================================== */
 /**
+ * Execute a block with specific power mode blocked
  *
+ * Example:
+ * @code{.c}
+ *  OS_WITH_POWER_MODE_BLOCKED(OS_POWER_MODE_DEEP_SLEEP) {
+ *    do_stuff();
+ *  }
+ * @endcode
  *
- * @param __mode
+ * @param __mode Power mode to block
  */
 #define OS_WITH_POWER_MODE_BLOCKED(__mode) \
   for (bool s = os_power_mode_blocked_enter(__mode); s; s = os_power_mode_blocked_exit(__mode))
@@ -81,7 +88,7 @@ error_t os_power_mode_change_port(os_power_mode_t mode);
 const char * os_power_mode_to_str(os_power_mode_t mode);
 
 /**
- *
+ * Part of @ref OS_WITH_POWER_MODE_BLOCKED. Blocks power mode
  *
  * @param mode
  */
@@ -91,11 +98,12 @@ __STATIC_INLINE bool os_power_mode_blocked_enter(os_power_mode_t mode) {
 }
 
 /**
- *
+ * Part of @ref OS_WITH_POWER_MODE_BLOCKED. Unblocks power mode
  *
  * @param mode
  */
 __STATIC_INLINE bool os_power_mode_blocked_exit(os_power_mode_t mode) {
+  // TODO: Return to previous value
   os_power_mode_block(mode, false);
   return false;
 }

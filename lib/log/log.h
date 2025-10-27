@@ -6,9 +6,6 @@
  *
  * @brief Logging support
  *
- * @note User must implement log_print_port function that will send complete
- *       logs wherever the user wants
- *
  *  ========================================================================= */
 #pragma once
 
@@ -188,9 +185,12 @@ void vlog_fmt(const char * file, int line, log_level_t level, const char * tag, 
 /**
  * Print log
  *
+ * @param[in] file  File, where log_* macro was invoked
+ * @param[in] line  Line in file, where log_* macro was invoked
  * @param[in] level Log level
- * @param[in] fmt Format (printf)
- * @param[in] ... Parameters
+ * @param[in] tag   Log module tag, NULL if not present
+ * @param[in] fmt   Format (printf)
+ * @param[in] ...   Parameters
  */
 void log_fmt(const char * file, int line, log_level_t level, const char * tag, const char * fmt, ...);
 
