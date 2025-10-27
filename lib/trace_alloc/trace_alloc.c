@@ -11,12 +11,12 @@
 /* Includes ================================================================= */
 #include "trace_alloc/trace_alloc.h"
 #include "os/alloc/alloc.h"
-#include "log/color.h"
+#include "tty/ansi.h"
 #include "log/log.h"
 
 /* Defines ================================================================== */
 #define TRACE_ALLOC_LOC_FMT                                                     \
-  COLOR_CYAN "%s" COLOR_RESET ":" COLOR_MAGENTA "%zu" COLOR_RESET
+  ANSI_COLOR_FG_CYAN "%s" ANSI_TEXT_RESET ":" ANSI_COLOR_FG_MAGENTA "%zu" ANSI_TEXT_RESET
 
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
@@ -55,8 +55,8 @@ size_t trace_alloc_end(trace_alloc_ctx_t * ctx) {
   for (size_t i = 0; i < TRACE_ALLOC_BUF_SIZE; ++i) {
     if (ctx->allocations[i].allocated) {
       TRACE_ALLOC_PORT_LOG(
-        COLOR_BOLD "malloc_checked" COLOR_RESET ": "
-          COLOR_RED "leak" COLOR_RESET " %p %zu (allocated at "
+        ANSI_TEXT_BOLD "malloc_checked" ANSI_TEXT_RESET ": "
+          ANSI_COLOR_FG_RED "leak" ANSI_TEXT_RESET " %p %zu (allocated at "
           TRACE_ALLOC_LOC_FMT ")\n",
         ctx->allocations[i].info.ptr, ctx->allocations[i].info.size,
         ctx->allocations[i].location.fn, ctx->allocations[i].location.line
@@ -84,7 +84,7 @@ void * trace_alloc_impl(size_t size, const char * fn, size_t line) {
         ctx->allocations[i].allocated = true;
 
         TRACE_ALLOC_PORT_LOG(
-          COLOR_BOLD "malloc_checked" COLOR_RESET ": %p %zu at "
+          ANSI_TEXT_BOLD "malloc_checked" ANSI_TEXT_RESET ": %p %zu at "
             TRACE_ALLOC_LOC_FMT "\n",
           ptr, size, fn, line
         );
@@ -108,7 +108,7 @@ void trace_free_impl(void * ptr, const char * fn, size_t line) {
         ctx->allocations[i].allocated = false;
 
         TRACE_ALLOC_PORT_LOG(
-          COLOR_BOLD "free_checked" COLOR_RESET ": %p %zu at "
+          ANSI_TEXT_BOLD "free_checked" ANSI_TEXT_RESET ": %p %zu at "
             TRACE_ALLOC_LOC_FMT " (allocated at " TRACE_ALLOC_LOC_FMT ")\n",
           ptr, ctx->allocations[i].info.size,
           ctx->allocations[i].location.fn, ctx->allocations[i].location.line,

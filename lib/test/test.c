@@ -45,17 +45,17 @@ int tests_run(tests_suite_t * suite, int argc, char ** argv) {
   size_t failed = 0;
 
   for (size_t i = 0; i < suite->size; ++i) {
-    TEST_LOG(COLOR_BOLD "========== TEST %s ==========\n" COLOR_RESET,
+    TEST_LOG(ANSI_TEXT_BOLD "========== TEST %s ==========\n" ANSI_TEXT_RESET,
       suite->tests[i].name);
 
     bool result = suite->tests[i].fn(suite);
 
     if (result) {
-      TEST_LOG_PORT("[" COLOR_GREEN "PASS" COLOR_RESET "] %s\n",
+      TEST_LOG_PORT("[" ANSI_COLOR_FG_GREEN "PASS" ANSI_TEXT_RESET "] %s\n",
         suite->tests[i].name);
       passed++;
     } else {
-      TEST_LOG_PORT("[" COLOR_RED "FAIL" COLOR_RESET "] %s\n",
+      TEST_LOG_PORT("[" ANSI_COLOR_FG_RED "FAIL" ANSI_TEXT_RESET "] %s\n",
         suite->tests[i].name);
       failed++;
     }
@@ -64,8 +64,8 @@ int tests_run(tests_suite_t * suite, int argc, char ** argv) {
   }
 
   TEST_LOG_PORT("Summary: "
-    COLOR_BOLD  "%zu" COLOR_RESET " tests " COLOR_GREEN "passed" COLOR_RESET ", "
-    COLOR_BOLD "%zu" COLOR_RESET " tests " COLOR_RED "failed" COLOR_RESET
+    ANSI_TEXT_BOLD  "%zu" ANSI_TEXT_RESET " tests " ANSI_COLOR_FG_GREEN "passed" ANSI_TEXT_RESET ", "
+    ANSI_TEXT_BOLD "%zu" ANSI_TEXT_RESET " tests " ANSI_COLOR_FG_RED "failed" ANSI_TEXT_RESET
     "\n", passed, failed);
 
   return (int) failed;

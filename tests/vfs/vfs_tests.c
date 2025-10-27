@@ -801,7 +801,7 @@ TEST_DECLARE(VFS, vfs_dynamic_file) {
 
 /* Shared functions ========================================================= */
 int main(int argc, char ** argv) {
-  TEST_LOG_PORT(COLOR_BOLD "====================[ VFS ]====================\n" COLOR_RESET);
+  TEST_LOG_PORT(ANSI_TEXT_BOLD "====================[ VFS ]====================\n" ANSI_TEXT_RESET);
 
   return tests_run(&VFS, argc, argv);
 }

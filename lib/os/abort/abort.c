@@ -10,7 +10,7 @@
 #include "os/abort/abort.h"
 #include "os/reset/reset.h"
 #include "log/log.h"
-#include "log/color.h"
+#include "tty/ansi.h"
 
 /* Defines ================================================================== */
 /* Macros =================================================================== */
@@ -22,7 +22,7 @@
 __NO_RETURN void os_abort(const char * msg, ...) {
   va_list args;
   va_start(args, msg);
-  log_fatal("%s        SYSTEM ABORT        %s", COLOR_RED_BG, COLOR_RESET);
+  log_fatal("%s        SYSTEM ABORT        %s", ANSI_COLOR_BG_RED, ANSI_TEXT_RESET);
   vlog_fmt(__FILE__, __LINE__, LOG_FATAL, NULL, msg, args);
   va_end(args);
   os_on_abort();

@@ -8,7 +8,7 @@
 
 /* Includes ================================================================= */
 #include "log/log.h"
-#include "log/color.h"
+#include "tty/ansi.h"
 #include "atomic/atomic.h"
 #include <string.h>
 #include <stdio.h>
@@ -44,11 +44,11 @@ log_level_t log_level_from_str(const char * str) {
 const char * log_get_level_color(log_level_t level) {
 #if USE_COLOR_LOG
   switch (level) {
-    case LOG_DEBUG:   return COLOR_CYAN;
-    case LOG_INFO:    return COLOR_BLUE;
-    case LOG_WARNING: return COLOR_YELLOW;
-    case LOG_ERROR:   return COLOR_RED;
-    case LOG_FATAL:   return COLOR_RED_BG;
+    case LOG_DEBUG:   return ANSI_COLOR_FG_CYAN;
+    case LOG_INFO:    return ANSI_COLOR_FG_BLUE;
+    case LOG_WARNING: return ANSI_COLOR_FG_YELLOW;
+    case LOG_ERROR:   return ANSI_COLOR_FG_RED;
+    case LOG_FATAL:   return ANSI_COLOR_BG_RED;
     default:
       return "";
   }
@@ -85,15 +85,15 @@ __WEAK void vlog_fmt(
     size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s][%s%s%s] ",
                      log_get_level_color(level),
                      log_get_level_string(level),
-                     USE_COLOR_LOG ? COLOR_RESET : "",
-                     USE_COLOR_LOG ? COLOR_MAGENTA : "",
+                     USE_COLOR_LOG ? ANSI_TEXT_RESET : "",
+                     USE_COLOR_LOG ? ANSI_COLOR_FG_MAGENTA : "",
                      tag,
-                     USE_COLOR_LOG ? COLOR_RESET : "");
+                     USE_COLOR_LOG ? ANSI_TEXT_RESET : "");
   } else {
     size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] ",
                      log_get_level_color(level),
                      log_get_level_string(level),
-                     USE_COLOR_LOG ? COLOR_RESET : "");
+                     USE_COLOR_LOG ? ANSI_TEXT_RESET : "");
   }
 
   size += vsnprintf(buf + size, sizeof(buf) - size - 1, fmt, args);

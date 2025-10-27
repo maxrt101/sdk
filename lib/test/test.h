@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* Includes ================================================================= */
-#include "log/color.h"
+#include "tty/ansi.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -37,7 +37,7 @@ extern "C" {
  * Shorthand for formatting alloc/free location (function:line)
  */
 #define TEST_LOC_FMT                                                            \
-  COLOR_CYAN "%s" COLOR_RESET ":" COLOR_MAGENTA "%d" COLOR_RESET
+  ANSI_COLOR_FG_CYAN "%s" ANSI_TEXT_RESET ":" ANSI_COLOR_FG_MAGENTA "%d" ANSI_TEXT_RESET
 
 /* Macros =================================================================== */
 /**
@@ -49,10 +49,10 @@ extern "C" {
 #define TEST_ASSERT(__value, __fail_str)                                        \
   do {                                                                          \
     if (!(__value)) {                                                           \
-      TEST_LOG_PORT(COLOR_RED "ASSERT" COLOR_RESET " '"                         \
-            COLOR_BOLD "%s" COLOR_RESET                                         \
+      TEST_LOG_PORT(ANSI_COLOR_FG_RED "ASSERT" ANSI_TEXT_RESET " '"             \
+            ANSI_TEXT_BOLD "%s" ANSI_TEXT_RESET                                 \
             "' failed at " TEST_LOC_FMT " with message '"                       \
-            COLOR_BOLD "%s" COLOR_RESET "'\n",                                  \
+            ANSI_TEXT_BOLD "%s" ANSI_TEXT_RESET "'\n",                          \
         UTIL_STRINGIFY(__value), __FILE__, __LINE__, __fail_str);               \
       return false;                                                             \
     }                                                                           \
