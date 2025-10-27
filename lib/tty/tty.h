@@ -97,7 +97,7 @@ error_t tty_reset(tty_t * tty);
 /**
  * Initialize TTY Line from c string
  *
- * @param tty TTY Context
+ * @param line TTY Line Context
  * @param str String to copy into line
  */
 error_t tty_line_from_str(tty_line_t * line, const char * str);
@@ -105,7 +105,7 @@ error_t tty_line_from_str(tty_line_t * line, const char * str);
 /**
  * Initialize TTY Line from buffer
  *
- * @param tty TTY Context
+ * @param line TTY Line Context
  * @param buf Buffer to copy into line
  * @param size Buffer size
  */

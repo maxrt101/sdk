@@ -931,7 +931,7 @@ error_t vfs_close(vfs_file_t * file) {
   return E_OK;
 }
 
-error_t vfs_read(vfs_file_t * file, uint8_t * buffer, size_t size) {
+error_t vfs_read(vfs_file_t * file, uint8_t * buffer, size_t size, vfs_read_flags_t flags) {
   ASSERT_RETURN(file && buffer && size, E_NULL);
 
   switch (file->head.type) {
@@ -944,7 +944,7 @@ error_t vfs_read(vfs_file_t * file, uint8_t * buffer, size_t size) {
 
     case VFS_BLOCK: {
       if (file->block.data.read) {
-        return file->block.data.read(file->block.data.ctx, file, buffer, size);
+        return file->block.data.read(file->block.data.ctx, file, buffer, size, flags);
       }
       break;
     }

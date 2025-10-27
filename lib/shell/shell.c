@@ -15,7 +15,7 @@
 #include "log/log.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG      SHELL
+#define LOG_TAG      shell
 #define SHELL_PROMPT "# " /* Shell prompt (TODO: make it into variable) */
 
 /* Macros =================================================================== */

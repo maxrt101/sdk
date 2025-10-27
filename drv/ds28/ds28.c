@@ -14,7 +14,7 @@
 #include <string.h>
 
 /* Defines ================================================================== */
-#define LOG_TAG DS28
+#define LOG_TAG ds28
 
 /** DS28 Family code, used to detect DS28 devices on the line */
 #define DS28EA00_FAMILY_CODE 0x42

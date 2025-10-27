@@ -183,6 +183,14 @@ typedef enum {
   VFS_NODE_FLAG_OPENED      = 1 << 2,
 } vfs_node_flags_t;
 
+/**
+ * VFS Read operation flags
+ */
+typedef enum {
+  VFS_READ_FLAG_NONE    = 0,
+  VFS_READ_FLAG_NOBLOCK = 1 << 0,
+} vfs_read_flags_t;
+
 /* Types ==================================================================== */
 /**
  * Make alias node_type == file_type
@@ -227,8 +235,9 @@ typedef error_t (*vfs_block_close_fn_t)(void *, vfs_file_t *);
  * @param file File, on which, the operation is performed
  * @param buffer Buffer to read to
  * @param size Size to read
+ * @param flags Read flags
  */
-typedef error_t (*vfs_block_read_fn_t)(void *, vfs_file_t *, uint8_t *, size_t);
+typedef error_t (*vfs_block_read_fn_t)(void *, vfs_file_t *, uint8_t *, size_t, vfs_read_flags_t);
 
 /**
  * VFS Block File write() callback
@@ -727,8 +736,9 @@ error_t vfs_close(vfs_file_t * file);
  * @param file Opened file context
  * @param buffer Buffer to read to
  * @param size Read size
+ * @param flags Read flags
  */
-error_t vfs_read(vfs_file_t * file, uint8_t * buffer, size_t size);
+error_t vfs_read(vfs_file_t * file, uint8_t * buffer, size_t size, vfs_read_flags_t flags);
 
 /**
  * Write to file

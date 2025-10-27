@@ -42,6 +42,7 @@ typedef enum {
   E_NOHANDLER,    /** No handler for operation */
   E_INUSE,        /** Resource already used */
   E_IO,           /** I/O Error */
+  E_WOULDBLOCK,   /** Operation would block execution */
 } error_t;
 
 /* Types ==================================================================== */

@@ -14,7 +14,7 @@
 #include "time/sleep.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG AHT
+#define LOG_TAG aht
 
 #define AHT10_CMD_INIT          0xE1
 #define AHT20_CMD_INIT          0xBE

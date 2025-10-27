@@ -41,6 +41,7 @@ const char * error2str(error_t err) {
     case E_NOHANDLER:   return "E_NOHANDLER";
     case E_INUSE:       return "E_INUSE";
     case E_IO:          return "E_IO";
+    case E_WOULDBLOCK:  return "E_WOULDBLOCK";
     default:
       return "E_?";
   }

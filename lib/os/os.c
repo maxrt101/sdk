@@ -22,7 +22,7 @@
 #endif
 
 /* Defines ================================================================== */
-#define LOG_TAG OS
+#define LOG_TAG os
 
 /**
  * Can statically limit number of cycles that the scheduler will run for

@@ -25,7 +25,7 @@ extern "C" {
 #include "time/timeout.h"
 
 #if HAS_TRX_RA02_SUPPORT
-#include "drv/trx/ra02/ra02.h"
+#include "drv/trx/sx1278/sx1278.h"
 #endif
 
 /* Defines ================================================================== */
@@ -57,7 +57,7 @@ typedef enum trx_ioctl_cmd_t {
 typedef struct trx_cfg_s {
   union {
 #if HAS_TRX_RA02_SUPPORT
-    ra02_trx_cfg_t ra02;
+    sx1278_trx_cfg_t ra02;
 #endif
   };
 } trx_cfg_t;
@@ -98,7 +98,7 @@ struct trx_s {
   trx_fn_t fn;
   union {
 #if HAS_TRX_RA02_SUPPORT
-    ra02_trx_t ra02;
+    sx1278_trx_t sx1278;
 #endif
   };
 };

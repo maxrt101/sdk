@@ -12,7 +12,7 @@
 #include "log/log.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG LOADER
+#define LOG_TAG loader
 
 /* Macros =================================================================== */
 #define MODULE_RUN_FOR_FILETYPE(__module, __fn, ...)                            \

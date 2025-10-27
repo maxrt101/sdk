@@ -12,7 +12,7 @@
 #include "log/log.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG                   HAL_1W
+#define LOG_TAG                   hal_1w
 
 #define OW_BAUDRATE_STARTUP       9600
 #define OW_BAUDRATE_OPERATIONAL   115200

@@ -13,7 +13,7 @@
 #include "time/time.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG             PWM
+#define LOG_TAG             pwm
 #define PWM_FREQ_HZ         50
 #define PWM_TICK_RATE       1000
 #define PWM_MAX_DUTY_CYCLE  (PWM_TICK_RATE/PWM_FREQ_HZ)

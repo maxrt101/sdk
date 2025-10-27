@@ -15,7 +15,7 @@
 #include "log/log.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG                   SHELL
+#define LOG_TAG                   shell
 #define SHELL_VAR_REFERENCE_MARK  '$'  /* Marks variable reference in a token */
 
 /* Macros =================================================================== */

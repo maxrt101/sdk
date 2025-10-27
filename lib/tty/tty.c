@@ -78,15 +78,13 @@ bool tty_get_flag(tty_t * tty, tty_flag_t flag) {
 error_t tty_read_line(tty_t * tty, tty_line_t * line) {
   ASSERT_RETURN(tty && line, E_NULL);
 
-  vfs_ioctl(tty->file, VFS_IOCTL_READ_TIMEOUT_ENABLE, false);
-
   line->size = 0;
 
   while (line->size < TTY_MAX_LINE_SIZE) {
     char c = '\0';
 
     // Read 1 char from UART
-    vfs_read(tty->file, (uint8_t *) &c, 1);
+    vfs_read(tty->file, (uint8_t *) &c, 1, VFS_READ_FLAG_NOBLOCK);
 
     if (c == TTY_ASCII_KEY_ESC) {
       continue;
@@ -133,8 +131,6 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
 error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
   ASSERT_RETURN(tty && line, E_NULL);
 
-  vfs_ioctl(tty->file, VFS_IOCTL_READ_TIMEOUT_ENABLE, true);
-
   if (line->size < TTY_MAX_LINE_SIZE) {
     char c = '\0';
 
@@ -143,7 +139,7 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
     }
 
     // Read 1 char from UART
-    ERROR_CHECK_RETURN(vfs_read(tty->file, (uint8_t *) &c, 1));
+    ERROR_CHECK_RETURN(vfs_read(tty->file, (uint8_t *) &c, 1, VFS_READ_FLAG_NONE));
 
     if (c == TTY_ASCII_KEY_ESC) {
       return E_AGAIN;
