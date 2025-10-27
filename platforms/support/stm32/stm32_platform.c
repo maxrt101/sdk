@@ -3,7 +3,6 @@
  * @file stm32_platform.c
  * @date 07-03-2025
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
- * @copyright GrainMole
  *
  * @brief STM32 Platform support code
  *
