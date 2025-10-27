@@ -25,15 +25,23 @@
 static vfs_file_t * log_file;
 
 /* Private functions ======================================================== */
-static void log_write(const uint8_t * buffer, size_t size) {
-#if USE_LOG_RESET_CURSOR
-  vfs_write(log_file, (const uint8_t *) "\r", 1);
-#endif
-
-  vfs_write(log_file, buffer, size);
+/* Shared functions ========================================================= */
+error_t log_init(vfs_file_t * out) {
+  log_file = out;
+  return E_OK;
 }
 
-static const char * log_get_level_color(log_level_t level) {
+log_level_t log_level_from_str(const char * str) {
+  if (!strcmp(str, "debug")) return LOG_DEBUG;
+  if (!strcmp(str, "info"))  return LOG_INFO;
+  if (!strcmp(str, "warn"))  return LOG_WARNING;
+  if (!strcmp(str, "error")) return LOG_ERROR;
+  if (!strcmp(str, "fatal")) return LOG_FATAL;
+
+  return LOG_DEBUG;
+}
+
+const char * log_get_level_color(log_level_t level) {
 #if USE_COLOR_LOG
   switch (level) {
     case LOG_DEBUG:   return COLOR_CYAN;
@@ -49,7 +57,7 @@ static const char * log_get_level_color(log_level_t level) {
 #endif
 }
 
-static const char * log_get_level_string(log_level_t level) {
+const char * log_get_level_string(log_level_t level) {
   switch (level) {
     case LOG_DEBUG:   return "debug";
     case LOG_INFO:    return "info ";
@@ -61,73 +69,45 @@ static const char * log_get_level_string(log_level_t level) {
   }
 }
 
-/* Shared functions ========================================================= */
-error_t log_init(vfs_file_t * out) {
-  log_file = out;
-  return E_OK;
-}
+__WEAK void vlog_fmt(
+  __UNUSED const char * file,
+  __UNUSED int line,
+  log_level_t level,
+  const char * tag,
+  const char * fmt,
+  va_list args
+) {
+  char buf[LOG_LINE_SIZE];
 
-log_level_t log_level_from_str(const char * str) {
-  if (!strcmp(str, "debug")) {
-    return LOG_DEBUG;
-  } else if (!strcmp(str, "info")) {
-    return LOG_INFO;
-  } else if (!strcmp(str, "warn")) {
-    return LOG_WARNING;
-  } else if (!strcmp(str, "error")) {
-    return LOG_ERROR;
-  } else if (!strcmp(str, "fatal")) {
-    return LOG_FATAL;
+  size_t size = 0;
+
+  if (tag) {
+    size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s][%s%s%s] ",
+                     log_get_level_color(level),
+                     log_get_level_string(level),
+                     USE_COLOR_LOG ? COLOR_RESET : "",
+                     USE_COLOR_LOG ? COLOR_MAGENTA : "",
+                     tag,
+                     USE_COLOR_LOG ? COLOR_RESET : "");
+  } else {
+    size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] ",
+                     log_get_level_color(level),
+                     log_get_level_string(level),
+                     USE_COLOR_LOG ? COLOR_RESET : "");
   }
-  return LOG_DEBUG;
-}
 
-void vlog_fmt(log_level_t level, const char * fmt, va_list args) {
-  char buf[LOG_LINE_SIZE];
-  size_t size = 0;
-
-  size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] ",
-                   log_get_level_color(level),
-                   log_get_level_string(level),
-                   USE_COLOR_LOG ? COLOR_RESET : "");
   size += vsnprintf(buf + size, sizeof(buf) - size - 1, fmt, args);
   size += snprintf(buf + size, sizeof(buf) - size - 1, LINE_ENDING);
 
   buf[size] = 0;
 
-  log_write((const uint8_t *) buf, size);
+  log_write_buffer((const uint8_t *) buf, size);
 }
 
-void vlog_module_fmt(log_level_t level, const char * tag, const char * fmt, va_list args) {
-  char buf[LOG_LINE_SIZE];
-  size_t size = 0;
-
-  size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s] [%s%s%s] ",
-                   log_get_level_color(level),
-                   log_get_level_string(level),
-                   USE_COLOR_LOG ? COLOR_RESET : "",
-                   USE_COLOR_LOG ? COLOR_MAGENTA : "",
-                   tag,
-                   USE_COLOR_LOG ? COLOR_RESET : "");
-  size += vsnprintf(buf + size, sizeof(buf) - size - 1, fmt, args);
-  size += snprintf(buf + size, sizeof(buf) - size - 1, LINE_ENDING);
-
-  buf[size] = 0;
-
-  log_write((const uint8_t *) buf, size);
-}
-
-void log_fmt(log_level_t level, const char * fmt, ...) {
+void log_fmt(const char * file, int line, log_level_t level, const char * tag, const char * fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  vlog_fmt(level, fmt, args);
-  va_end(args);
-}
-
-void log_module_fmt(log_level_t level, const char * tag, const char * fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  vlog_module_fmt(level, tag, fmt, args);
+  vlog_fmt(file, line, level, tag, fmt, args);
   va_end(args);
 }
 
@@ -142,4 +122,12 @@ void log_printf(const char * fmt, ...) {
   buf[size] = 0;
 
   vfs_write(log_file, buf, size);
+}
+
+void log_write_buffer(const uint8_t * buffer, size_t size) {
+#if USE_LOG_RESET_CURSOR
+  vfs_write(log_file, (const uint8_t *) "\r", 1);
+#endif
+
+  vfs_write(log_file, buffer, size);
 }

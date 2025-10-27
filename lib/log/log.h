@@ -47,13 +47,13 @@ extern "C" {
  * Log print helper macro, calls log_fmt to print the line
  */
 #define log_print_raw(level, fmt, ...) \
-    log_fmt(level, fmt, ##__VA_ARGS__)
+    log_fmt(__FILE__, __LINE__, level, NULL, fmt, ##__VA_ARGS__)
 
 /**
  * Log print helper macro, calls log_module_fmt to print the line
  */
 #define log_print_module_raw(level, module, fmt, ...) \
-    log_module_fmt(level, UTIL_STRINGIFY(module), fmt, ##__VA_ARGS__)
+    log_fmt(__FILE__, __LINE__, level, UTIL_STRINGIFY(module), fmt, ##__VA_ARGS__)
 
 /**
  * Log print helper macro, calls log_module_fmt to print the line
@@ -62,7 +62,7 @@ extern "C" {
  */
 #define log_print_module_level_check(level, module, fmt, ...)                \
     ((level >= LOG_WARNING)                                                  \
-        ? log_module_fmt(level, UTIL_STRINGIFY(module), fmt, ##__VA_ARGS__)  \
+        ? log_fmt(__FILE__, __LINE__, level, UTIL_STRINGIFY(module), fmt, ##__VA_ARGS__)  \
         : 0)
 
 /**
@@ -147,7 +147,7 @@ typedef enum {
 /**
  * Initializes log module
  *
- * @param[in] file File to write to
+ * @param[in] out File to write logs to
  */
 error_t log_init(vfs_file_t * out);
 
@@ -159,24 +159,31 @@ error_t log_init(vfs_file_t * out);
 log_level_t log_level_from_str(const char * str);
 
 /**
- * Print log (variadic)
+ * Convert log level to ansi color string
  *
- * @param[in] level Log level
- * @param[in] fmt Format (printf)
- * @param[in] args Variadic parameters
+ * @param level Log level
+ * @return ANSI color
  */
-void vlog_fmt(log_level_t level, const char * fmt, va_list args);
+const char * log_get_level_color(log_level_t level);
 
 /**
- * Print log with module tag (variadic)
+ * Convert log level enum to string representation
+ *
+ * @param level Log level
+ * @return Log level string
+ */
+const char * log_get_level_string(log_level_t level);
+
+/**
+ * Print log (variadic)
+ *
+ * @note Has WEAK attribute, so can be redefined
  *
  * @param[in] level Log level
- * @param[in] tag Module name
  * @param[in] fmt Format (printf)
  * @param[in] args Variadic parameters
  */
-void vlog_module_fmt(log_level_t level, const char * tag,
-                     const char * fmt, va_list args);
+void vlog_fmt(const char * file, int line, log_level_t level, const char * tag, const char * fmt, va_list args);
 
 /**
  * Print log
@@ -185,18 +192,7 @@ void vlog_module_fmt(log_level_t level, const char * tag,
  * @param[in] fmt Format (printf)
  * @param[in] ... Parameters
  */
-void log_fmt(log_level_t level, const char * fmt, ...);
-
-/**
- * Print log, with module tag (LOG_TAG)
- *
- * @param[in] level Log level
- * @param[in] tag Module name
- * @param[in] fmt Format (printf)
- * @param[in] ... Parameters
- */
-void log_module_fmt(log_level_t level, const char * tag,
-                    const char * fmt, ...);
+void log_fmt(const char * file, int line, log_level_t level, const char * tag, const char * fmt, ...);
 
 /**
  * Print string without log formatting (calls log_print_port)
@@ -204,7 +200,15 @@ void log_module_fmt(log_level_t level, const char * tag,
  * @param[in] fmt Format (printf)
  * @param[in] ... Parameters
  */
-void log_printf(const char * buffer, ...);
+void log_printf(const char * fmt, ...);
+
+/**
+ * Writes formatted buffer to `out` (@ref log_init)
+ *
+ * @param buffer Buffer to write
+ * @param size Buffer size
+ */
+void log_write_buffer(const uint8_t * buffer, size_t size);
 
 #ifdef __cplusplus
 }
