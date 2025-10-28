@@ -15,6 +15,8 @@ extern "C" {
 
 /* Includes ================================================================= */
 #include <stdint.h>
+
+#include "os.h"
 #include "error/error.h"
 #include "error/assertion.h"
 #include "time/timeout.h"
@@ -32,9 +34,9 @@ extern "C" {
  * Can be put before a block to make a block of code acquire semaphore on
  * enter and release on exit
  */
-#define OS_SEM_BLOCK(sem, ms)                           \
-  for (bool e = (os_semaphore_acquire(sem, ms), true);  \
-      e; e = (os_semaphore_release(sem), false))
+#define OS_SEM_BLOCK(__sem, __ms)                           \
+  for (bool e = (os_semaphore_acquire(__sem, __ms), true);  \
+      e; e = (os_semaphore_release(__sem), false))
 
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
@@ -103,6 +105,7 @@ __STATIC_INLINE error_t os_semaphore_acquire(os_semaphore_t * sem, milliseconds_
     if (timeout_ms != OS_SEM_WAIT_FOREVER && timeout_is_expired(&t)) {
       return E_TIMEOUT;
     }
+    os_yield();
   }
 
   ATOMIC_BLOCK() {
