@@ -33,7 +33,7 @@ extern "C" {
  * If enabled, will trace all mutex operations to log_debug
  */
 #ifndef USE_OS_TRACE_MUTEX
-#define USE_OS_TRACE_MUTEX 1
+#define USE_OS_TRACE_MUTEX 0
 #endif
 
 /**
@@ -45,11 +45,12 @@ extern "C" {
 /**
  * Creates a mutex
  */
-#define OS_CREATE_MUTEX(__name)   \
-  os_mutex_t __name = {           \
-    .status  = OS_MUTEX_UNLOCKED, \
-    .owner   = NULL,              \
-    .waiters = {0}                \
+#define OS_CREATE_MUTEX(__name)         \
+  os_mutex_t __name = {                 \
+    .status  = OS_MUTEX_UNLOCKED,       \
+    .name    = UTIL_STRINGIFY(__name),  \
+    .owner   = NULL,                    \
+    .waiters = {0}                      \
   };
 
 /* Enums ==================================================================== */
@@ -62,8 +63,9 @@ typedef struct {
     OS_MUTEX_UNLOCKED = 0,
     OS_MUTEX_LOCKED   = 1,
   } status;
-  os_task_t * owner;
-  os_task_t * waiters[OS_MUTEX_MAX_WAITERS];
+  const char * name;
+  os_task_t *  owner;
+  os_task_t *  waiters[OS_MUTEX_MAX_WAITERS];
 } os_mutex_t;
 
 /* Variables ================================================================ */
@@ -74,8 +76,9 @@ typedef struct {
  * @note By default, sets owner to current task
  *
  * @param mutex Mutex handle
+ * @param name Mutex name
  */
-void os_mutex_init(os_mutex_t * mutex);
+void os_mutex_init(os_mutex_t * mutex, const char * name);
 
 /**
  * Resets mutex (clears waiters list)
