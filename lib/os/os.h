@@ -110,7 +110,6 @@ extern "C" {
 #define OS_STAT_TRACE_TASK_STACK_CYCLES            10
 #endif
 
-
 /**
  * If enabled, will log every scheduler cycle number and tick
  */
@@ -184,14 +183,14 @@ extern "C" {
 #define OS_CREATE_TASK(__name, __stack_size, __fn, __arg, ...)          \
   uint8_t UTIL_CAT(__name, _task_stack)[__stack_size] __ALIGNED(8);     \
   os_task_t UTIL_CAT(__name, _task) = {                                 \
-    .next = NULL,                                                       \
-    .state = OS_TASK_STATE_NONE,                                        \
-    .priority = UTIL_IF_EMPTY(__VA_ARGS__, 0, __VA_ARGS__),             \
-    .name = UTIL_STRINGIFY(__name),                                     \
-    .stack.start = UTIL_CAT(__name, _task_stack),                       \
-    .stack.end = UTIL_CAT(__name, _task_stack) + __stack_size,          \
-    .fn = __fn,                                                         \
-    .arg = __arg,                                                       \
+    .next         = NULL,                                               \
+    .state        = OS_TASK_STATE_NONE,                                 \
+    .priority     = UTIL_IF_EMPTY(__VA_ARGS__, 0, __VA_ARGS__),         \
+    .name         = UTIL_STRINGIFY(__name),                             \
+    .stack.start  = UTIL_CAT(__name, _task_stack),                      \
+    .stack.end    = UTIL_CAT(__name, _task_stack) + __stack_size,       \
+    .fn           = __fn,                                               \
+    .arg          = __arg,                                              \
   }
 
 /**

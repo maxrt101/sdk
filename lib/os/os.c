@@ -9,6 +9,7 @@
 /* Includes ================================================================= */
 #include "log/log.h"
 #include "error/assertion.h"
+#include "time/sleep.h"
 #include "os/abort/abort.h"
 #include "os/power/power.h"
 #include "os.h"
@@ -133,7 +134,7 @@ typedef struct {
 /**
  * Global OS Context
  */
-static os_t os;
+static os_t os = {0};
 
 /* Private functions ======================================================== */
 /**
@@ -218,7 +219,6 @@ error_t os_task_create(
   return os_task_start(task);
 }
 
-// __OPTIMIZE(0)
 void os_launch(void) {
   log_info("Init scheduler");
 
@@ -515,10 +515,14 @@ bool os_task_iter(os_task_t ** task) {
   if (*task) {
     *task = (*task)->next;
     return *task;
-  } else {
+  }
+
+  if (os.task.head) {
     *task = os.task.head;
     return true;
   }
+
+  return false;
 }
 
 error_t os_task_stat(os_task_t * task, os_task_stat_t * stat) {
