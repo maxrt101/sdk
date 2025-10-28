@@ -51,8 +51,8 @@ typedef __PACKED_STRUCT {
 /** Hash table context */
 typedef struct {
   table_node_t * nodes;
-  size_t capacity;
-  size_t size;
+  size_t         capacity;
+  size_t         size;
 } table_t;
 
 /* Variables ================================================================ */

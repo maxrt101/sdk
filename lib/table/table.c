@@ -62,9 +62,10 @@ size_t table_get_size(table_t * table) {
 error_t table_add(table_t * table, table_hash_t hash, void * value) {
   ASSERT_RETURN(table, E_NULL);
 
-  table_node_t * node = &table->nodes[hash % table->capacity];
+  size_t index = hash % table->capacity;
+  table_node_t * node = &table->nodes[index];
 
-  for (size_t i = 0; i < table->capacity; ++i) {
+  for (size_t i = index; i < table->capacity; ++i) {
     if (!node->used) {
       node->hash = hash;
       node->value = value;
