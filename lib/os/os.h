@@ -212,6 +212,7 @@ typedef enum {
   OS_TASK_STATE_INIT      = 1,
   OS_TASK_STATE_READY     = 2,
   OS_TASK_STATE_PAUSED    = 3,
+  // TODO: Maybe for yield use another state, like OS_TASK_STATE_YIELDED?
   OS_TASK_STATE_WAITING   = 4,
   OS_TASK_STATE_LOCKED    = 5,
   OS_TASK_STATE_EXITED    = 6,
@@ -431,11 +432,12 @@ error_t os_task_set_priority(os_task_t * task, uint8_t priority);
 /**
  * Yields execution
  *
- * Calls delay with 1 ms timeout
- * Sets current task state to WAITING and returns to scheduler
+ * // Calls delay with 1 ms timeout
+ * // Sets current task state to WAITING and returns to scheduler
  */
 __STATIC_INLINE void os_yield(void) {
-  os_delay(1);
+  // os_delay(1);
+  os_schedule();
 }
 
 /**

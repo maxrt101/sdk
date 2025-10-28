@@ -235,6 +235,8 @@ void os_launch(void) {
     // Increase cycle counter
     os.cycles++;
 
+    // TODO: Add idle task, and run it if previous cycle had all tasks blocked
+
     OS_LOG_TRACE(CYCLE, "Cycle %d (tick=%d)", os.cycles, runtime_get());
 
 #if USE_MAX_CYCLES
@@ -311,6 +313,7 @@ void os_launch(void) {
     UTIL_IF_1(OS_USE_SOFT_WDT, soft_wdt_check());
 
     // Advance current task to the next in the task list, only if target runs per cycles is reached
+    // TODO: Are priorities supposed to work like that?
     if (os.runs >= os.task.current->priority) {
       // Reset task runs
       os.runs = 0;
@@ -339,6 +342,7 @@ void os_schedule(void) {
 #if OS_STAT_TRACE_TASK_STACK
   if (os.cycles % OS_STAT_TRACE_TASK_STACK_CYCLES == 0) {
     if (!CHECK_MAGIC(os.task.current->stack.last_sp)) {
+      // TODO: Maybe remove this loop by creating a variable on stack, and checking immediate value after it for stack magic
       for (uint32_t * sp = os.task.current->stack.start; sp < (uint32_t *) os.task.current->stack.end; ++sp) {
         if (*sp != OS_STACK_MAGIC) {
           os.task.current->stack.last_sp = sp-1;
