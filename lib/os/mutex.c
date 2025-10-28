@@ -30,7 +30,8 @@ void os_mutex_init(os_mutex_t * mutex) {
   // By default, task that created the mutex, will be it's first owner
   mutex->owner = os_task_current();
 
-  OS_LOG_TRACE(MUTEX, "mutex init %p (owner %p '%s')", mutex, mutex->owner, mutex->owner->name);
+  OS_LOG_TRACE(MUTEX, "mutex init %p (owner %p '%s')",
+    mutex, mutex->owner, mutex->owner->name);
 }
 
 void os_mutex_reset(os_mutex_t * mutex) {
@@ -47,7 +48,7 @@ bool os_mutex_lock(os_mutex_t * mutex, timeout_t * timeout) {
   ASSERT_RETURN(mutex, false);
 
   OS_LOG_TRACE(MUTEX, "os_mutex_lock: %p (owner %p '%s') by %p '%s' for %d ms",
-    mutex, mutex->owner, mutex->owner->name,
+    mutex, mutex->owner, mutex->owner ? mutex->owner->name : "?",
     os_task_current(), os_task_current()->name,
     timeout ? timeout->duration : -1);
 
@@ -70,20 +71,20 @@ bool os_mutex_lock(os_mutex_t * mutex, timeout_t * timeout) {
       }
     }
 
-    // It current task wasn't added because waiters list is full - abort or return false
+    // If current task wasn't added because waiters list is full - abort or return false
     if (!task_added_to_waiters) {
       UTIL_IF_1(OS_MUTEX_ABORT_ON_WAITER_OVERFLOW,
         os_abort("os_mutex_lock: waiter list overflow for mutex %p (owner %p '%s'), lock tried by %p '%s'",
-          mutex, mutex->owner, mutex->owner->name, os_task_current(), os_task_current()->name),
+          mutex, mutex->owner, mutex->owner ? mutex->owner->name : "?", os_task_current(), os_task_current()->name),
         return (
           log_warn("os_mutex_lock: waiter list overflow for mutex %p (owner %p '%s'), lock for %p '%s' failed",
-            mutex, mutex->owner, mutex->owner->name, os_task_current(), os_task_current()->name),
+            mutex, mutex->owner, mutex->owner ? mutex->owner->name : "?", os_task_current(), os_task_current()->name),
           false
         ));
     }
 
     if (timeout) {
-      OS_LOG_TRACE(MUTEX, "os_mutex_lock: task '%s' WAITING (% dms) on %p",
+      OS_LOG_TRACE(MUTEX, "os_mutex_lock: task '%s' WAITING (%dms) on %p",
         os_task_current()->name, timeout->duration, mutex);
 
       // If lock timeout is specified, delay for specified time,
@@ -106,7 +107,7 @@ bool os_mutex_lock(os_mutex_t * mutex, timeout_t * timeout) {
   }
 
   // Execution reaches here if mutex is locked and timeout has expired, or
-  // mutex wal unlocked from the beginning
+  // mutex was unlocked from the beginning
   return os_mutex_try_lock(mutex);
 }
 
@@ -114,14 +115,14 @@ bool os_mutex_try_lock(os_mutex_t * mutex) {
   ASSERT_RETURN(mutex, false);
 
   OS_LOG_TRACE(MUTEX, "os_mutex_try_lock: %p (owner %p '%s') by %p '%s'",
-    mutex, mutex->owner, mutex->owner->name,
+    mutex, mutex->owner, mutex->owner ? mutex->owner->name : "?",
     os_task_current(), os_task_current()->name);
 
   if (mutex->status == OS_MUTEX_UNLOCKED) {
     // Set mutex state to locked
     mutex->status = OS_MUTEX_LOCKED;
 
-    // Transfer ownership to curren task
+    // Transfer ownership to current task
     mutex->owner = os_task_current();
 
     // Clear current task from waiters
@@ -151,7 +152,7 @@ void os_mutex_unlock(os_mutex_t * mutex) {
   ASSERT_RETURN(mutex);
 
   OS_LOG_TRACE(MUTEX, "os_mutex_unlock: %p (owner %p '%s') by %p '%s'",
-    mutex, mutex->owner, mutex->owner->name,
+    mutex, mutex->owner, mutex->owner ? mutex->owner->name : "?",
     os_task_current(), os_task_current()->name);
 
   if (mutex->status == OS_MUTEX_UNLOCKED) {
@@ -170,7 +171,9 @@ void os_mutex_unlock(os_mutex_t * mutex) {
       // For each waiter, set it's state to WAITING and timeout to
       // corresponding waiter index, to preserve lock order
       mutex->waiters[i]->state = OS_TASK_STATE_WAITING;
-      timeout_start(&mutex->waiters[i]->wait_timeout, i);
+      if (timeout_is_expired(&mutex->waiters[i]->wait_timeout)) {
+        timeout_start(&mutex->waiters[i]->wait_timeout, i);
+      }
       mutex->waiters[i] = NULL;
     }
   }

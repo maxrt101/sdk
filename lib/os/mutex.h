@@ -36,7 +36,22 @@ extern "C" {
 #define USE_OS_TRACE_MUTEX 1
 #endif
 
+/**
+ * A value to pass to os_mutex_lock to wait indefinitely
+ */
+#define OS_MUTEX_WAIT_FOREVER NULL
+
 /* Macros =================================================================== */
+/**
+ * Creates a mutex
+ */
+#define OS_CREATE_MUTEX(__name)   \
+  os_mutex_t __name = {           \
+    .status  = OS_MUTEX_UNLOCKED, \
+    .owner   = NULL,              \
+    .waiters = {0}                \
+  };
+
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
 /**
