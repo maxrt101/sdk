@@ -889,6 +889,8 @@ vfs_file_t * vfs_open(vfs_t * vfs, const char * path) {
 
   vfs_node_t * node = vfs_resolve_link(vfs, vfs_find_node(vfs, path));
 
+  ASSERT_RETURN(node, NULL);
+
   if (node->head.flags & VFS_NODE_FLAG_OPENED && !(node->head.flags & VFS_NODE_FLAG_MULTI_OPEN)) {
     return NULL;
   }
