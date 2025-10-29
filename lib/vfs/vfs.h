@@ -432,6 +432,13 @@ typedef struct {
 } vfs_path_split_ctx_t;
 
 /* Variables ================================================================ */
+#if USE_GLOBAL_VFS
+/**
+ * Global VFS instance
+ */
+extern vfs_t vfs;
+#endif
+
 /* Shared functions ========================================================= */
 /**
  * Concatenates 2 paths
