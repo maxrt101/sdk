@@ -12,6 +12,7 @@
 #include <string.h>
 #include "shell/shell.h"
 #include "error/assertion.h"
+#include "tty/ansi.h"
 #include "log/log.h"
 
 /* Defines ================================================================== */
@@ -27,8 +28,7 @@
 extern void shell_parse(shell_t * ctx);
 
 __STATIC_INLINE void shell_reset_buffers(shell_t * ctx) {
-  memset(ctx->line.buf, 0, sizeof(ctx->line.buf));
-  ctx->line.size = 0;
+  tty_line_reset(&ctx->line);
 
   memset(ctx->ptr.buf, 0, sizeof(ctx->ptr.buf));
   ctx->ptr.size = 0;
@@ -52,7 +52,7 @@ __STATIC_INLINE void shell_print_line(shell_t * ctx) {
   tty_line_t line;
 
   // Move cursor the beginning of the line
-  tty_line_from_str(&line, "\r");
+  tty_line_from_str(&line, ANSI_ERASE_FROM_CURSOR_TO_LINE_START "\r");
   tty_write_line(&ctx->tty, &line);
 
   // If prompt is enabled - print it
