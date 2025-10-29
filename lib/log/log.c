@@ -77,9 +77,8 @@ __WEAK void vlog_fmt(
   const char * fmt,
   va_list args
 ) {
-  char buf[LOG_LINE_SIZE];
-
-  size_t size = 0;
+  char buf[LOG_LINE_SIZE] = {'\r'};
+  size_t size = 1;
 
   if (tag) {
     size += snprintf(buf + size, sizeof(buf) - size - 1, "[%s%s%s][%s%s%s] ",
@@ -125,9 +124,5 @@ void log_printf(const char * fmt, ...) {
 }
 
 void log_write_buffer(const uint8_t * buffer, size_t size) {
-#if USE_LOG_RESET_CURSOR
-  vfs_write(log_file, (const uint8_t *) "\r", 1);
-#endif
-
   vfs_write(log_file, buffer, size);
 }
