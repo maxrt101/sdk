@@ -222,6 +222,10 @@ error_t os_task_create(
 void os_launch(void) {
   log_info("Init scheduler");
 
+  if (!os.task.head) {
+    os_abort("No tasks present in scheduler");
+  }
+
   os.cycles = 0;
 
   // Prepares stack for scheduler
@@ -270,7 +274,8 @@ void os_launch(void) {
       os.task.current->fn(os.task.current->arg);
 
       // Only reached if task function executes a `return`
-      log_warn("Task '%s': function returned", os.task.current->name);
+      UTIL_IF_1(OS_WARN_ON_TASK_EXIT,
+        log_warn("Task '%s': function returned", os.task.current->name));
 
       // If enabled - abort if task returns, otherwise just call os_exit
       UTIL_IF_1(OS_ABORT_ON_TASK_EXIT,
@@ -509,6 +514,16 @@ error_t os_task_set_priority(os_task_t * task, uint8_t priority) {
   ASSERT_RETURN(task, E_NULL);
 
   task->priority = priority;
+
+  return E_OK;
+}
+
+error_t os_wait_task(os_task_t * task) {
+  ASSERT_RETURN(task, E_NULL);
+
+  while (task->state != OS_TASK_STATE_EXITED) {
+    os_yield();
+  }
 
   return E_OK;
 }
