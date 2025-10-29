@@ -357,7 +357,7 @@ error_t tty_write_fmt(tty_t * tty, const char * fmt, ...) {
 }
 
 error_t tty_bell(tty_t * tty) {
-  ASSERT_RETURN(tty);
+  ASSERT_RETURN(tty, E_NULL);
 
   if (tty_get_flag(tty, TTY_FLAG_USE_BELL)) {
     vfs_write(tty->file, (uint8_t *) &(char){TTY_ASCII_KEY_BEL}, 1);
