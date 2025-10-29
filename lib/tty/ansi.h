@@ -93,21 +93,51 @@ extern "C" {
 #define ANSI_COLOR_BG_DEFAULT ""
 #endif
 
+#define ANSI_CURSOR_MOVE_FMT        "\x1b[%d;%dH"
+#define ANSI_CURSOR_MOVE_UP_FMT     "\x1b[%dA"
+#define ANSI_CURSOR_MOVE_DOWN_FMT   "\x1b[%dB"
+#define ANSI_CURSOR_MOVE_RIGHT_FMT  "\x1b[%dC"
+#define ANSI_CURSOR_MOVE_LEFT_FMT   "\x1b[%dD"
+
 /* Macros =================================================================== */
+/**
+ * Creates static string with ANSI escape sequence that will move cursor
+ * to (__line, __col)
+ */
 #define ANSI_CURSOR_MOVE(__line, __col) \
   ("\x1b[" UTIL_STRINGIFY(__line) ";" UTIL_STRINGIFY(__col) "H")
 
-#define ANSI_CURSOR_MOVE_UP(__lines) \
-  ("\x1b[" UTIL_STRINGIFY(__lines) "A")
+/**
+ * Creates static string with ANSI escape sequence that will move cursor UP
+ * by number of lines specified in __VA_ARGS__. If __VA_ARGS__ are empty -
+ * will move by 1 line
+ */
+#define ANSI_CURSOR_MOVE_UP(...) \
+  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "A")
 
-#define ANSI_CURSOR_MOVE_DOWN(__lines) \
-  ("\x1b[" UTIL_STRINGIFY(__lines) "B")
+/**
+ * Creates static string with ANSI escape sequence that will move cursor DOWN
+ * by number of lines specified in __VA_ARGS__. If __VA_ARGS__ are empty -
+ * will move by 1 line
+ */
+#define ANSI_CURSOR_MOVE_DOWN(...) \
+  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "B")
 
-#define ANSI_CURSOR_MOVE_RIGHT(__cols) \
-  ("\x1b[" UTIL_STRINGIFY(__cols) "C")
+/**
+ * Creates static string with ANSI escape sequence that will move cursor RIGHT
+ * by number of columns specified in __VA_ARGS__. If __VA_ARGS__ are empty -
+ * will move by 1 column
+ */
+#define ANSI_CURSOR_MOVE_RIGHT(...) \
+  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "C")
 
-#define ANSI_CURSOR_MOVE_LEFT(__cols) \
-  ("\x1b[" UTIL_STRINGIFY(__cols) "D")
+/**
+ * Creates static string with ANSI escape sequence that will move cursor LEFT
+ * by number of columns specified in __VA_ARGS__. If __VA_ARGS__ are empty -
+ * will move by 1 column
+ */
+#define ANSI_CURSOR_MOVE_LEFT(...) \
+  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "D")
 
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
