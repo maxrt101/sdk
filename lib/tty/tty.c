@@ -37,6 +37,8 @@ static error_t tty_process_ansi_csi(tty_t * tty, tty_line_t * line, char c) {
       if (line->input.cursor < line->size) {
         line->input.cursor++;
         tty_write_fmt(tty, ANSI_CURSOR_MOVE_RIGHT());
+      } else {
+        tty_bell(tty);
       }
       break;
 
@@ -44,6 +46,8 @@ static error_t tty_process_ansi_csi(tty_t * tty, tty_line_t * line, char c) {
       if (line->input.cursor > 0) {
         line->input.cursor--;
         tty_write_fmt(tty, ANSI_CURSOR_MOVE_LEFT());
+      } else {
+        tty_bell(tty);
       }
       break;
 
@@ -96,7 +100,7 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
         // Move the remainder of the line from char preceding cursor
         // (which will get erased) to the end of the line
         memcpy(
-          &line->buf[line->input.cursor-1],
+          &line->buf[line->input.cursor - 1],
           &line->buf[line->input.cursor],
           line->size - line->input.cursor + 1
         );
@@ -131,7 +135,10 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
         line->size         -= 1;
         line->input.cursor -= 1;
       }
+    } else {
+      tty_bell(tty);
     }
+
     // If there is nothing to erase, skip
     return E_AGAIN;
   }
@@ -169,7 +176,7 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
       tty_write_fmt(
         tty,
         "%.*s" ANSI_CURSOR_MOVE_LEFT_FMT,
-        left + 1, &line->buf[line->input.cursor-1], left
+        left + 1, &line->buf[line->input.cursor - 1], left
       );
     }
   } else {
@@ -192,7 +199,7 @@ error_t tty_init(tty_t * tty, vfs_file_t * file) {
   ASSERT_RETURN(tty && file, E_NULL);
 
   tty->file = file;
-  tty->flags = TTY_FLAG_ECHO_INPUT;
+  tty->flags = TTY_FLAG_ECHO_INPUT | TTY_FLAG_USE_BELL;
 
   return E_OK;
 }
@@ -347,6 +354,16 @@ error_t tty_write_fmt(tty_t * tty, const char * fmt, ...) {
   va_end(args);
 
   return result;
+}
+
+error_t tty_bell(tty_t * tty) {
+  ASSERT_RETURN(tty);
+
+  if (tty_get_flag(tty, TTY_FLAG_USE_BELL)) {
+    vfs_write(tty->file, (uint8_t *) &(char){TTY_ASCII_KEY_BEL}, 1);
+  }
+
+  return E_OK;
 }
 
 __WEAK error_t tty_process_ansi_csi_custom(__UNUSED tty_t * tty, tty_line_t * line, __UNUSED char c) {

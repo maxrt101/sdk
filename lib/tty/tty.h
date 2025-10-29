@@ -42,6 +42,13 @@ extern "C" {
 #endif
 
 /**
+ * ASCII value for BEL
+ */
+#ifndef TTY_ASCII_KEY_BEL
+#define TTY_ASCII_KEY_BEL '\a'
+#endif
+
+/**
  * UART sends CR if enter is pressed
  */
 #ifndef TTY_ASCII_KEY_ENTER
@@ -55,6 +62,7 @@ extern "C" {
  */
 typedef enum {
   TTY_FLAG_ECHO_INPUT = (1 << 0),
+  TTY_FLAG_USE_BELL   = (1 << 1),
 } tty_flag_t;
 
 /* Types ==================================================================== */
@@ -230,6 +238,13 @@ error_t tty_write_line(tty_t * tty, tty_line_t * line);
  * @param ... Format arguments
  */
 error_t tty_write_fmt(tty_t * tty, const char * fmt, ...);
+
+/**
+ * Signal with ASCII BEL char, if appropriate flag is set
+ *
+ * @param tty TTY Context
+ */
+error_t tty_bell(tty_t * tty);
 
 /**
  * Handler for custom CSI escape sequences
