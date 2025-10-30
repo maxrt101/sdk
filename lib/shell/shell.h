@@ -4,11 +4,15 @@
  * @date 19-08-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief Shell library. Implements command line environment. Uses UART for IO.
- *        Supports environment variables, custom commands, line parsing into
- *        tokens, backspace, etc.
+ * @brief Shell library. Implements command line environment. Uses TTY
+ *        abstraction for IO. Supports environment variables, custom commands,
+ *        line parsing into tokens, backspace, arrow keys, history &
+ *        environment variables.
  *
- * TODO: History buffer, handle special chars better (backspace, arrows, ...)
+ * @note For environment variables to work define USE_SHELL_ENV in CMake
+ * @note For history to work define USE_SHELL_HISTORY in CMake
+ *
+ * To control history size use SHELL_HISTORY_BUFFER_SIZE
  *
  *  ========================================================================= */
 #pragma once
@@ -25,52 +29,62 @@ extern "C" {
 #include "tty/tty.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /* Defines ================================================================== */
 /**
  * Max size of one line read from input
  */
 #ifndef SHELL_MAX_LINE_SIZE
-#define SHELL_MAX_LINE_SIZE     64
+#define SHELL_MAX_LINE_SIZE         32
 #endif
 
 /**
  * Max number of tokens
  */
 #ifndef SHELL_MAX_TOKENS
-#define SHELL_MAX_TOKENS        16
+#define SHELL_MAX_TOKENS            16
 #endif
 
 /**
  * Max size of variable name
  */
 #ifndef SHELL_VAR_NAME_SIZE
-#define SHELL_VAR_NAME_SIZE     8
+#define SHELL_VAR_NAME_SIZE         8
 #endif
 
 /**
  * Max size of variable value
  */
 #ifndef SHELL_VAR_VALUE_SIZE
-#define SHELL_VAR_VALUE_SIZE    16
+#define SHELL_VAR_VALUE_SIZE        16
 #endif
 
 /**
  * Max variable count
  */
 #ifndef SHELL_VAR_BUFFER_SIZE
-#define SHELL_VAR_BUFFER_SIZE   4
+#define SHELL_VAR_BUFFER_SIZE       4
+#endif
+
+/**
+ * History buffer size
+ *
+ * @note Will use SHELL_MAX_LINE_SIZE * SHELL_HISTORY_BUFFER_SIZE bytes
+ */
+#ifndef SHELL_HISTORY_BUFFER_SIZE
+#define SHELL_HISTORY_BUFFER_SIZE   4
 #endif
 
 /**
  * Successful result
  */
-#define SHELL_OK                0
+#define SHELL_OK    0
 
 /**
  * Operation failed
  */
-#define SHELL_FAIL              1
+#define SHELL_FAIL  1
 
 /**
  * Internal macro
@@ -171,11 +185,27 @@ typedef struct shell_s {
   /** Argument string pointer array (argc, argv) */
   struct {
     const char * buf[SHELL_MAX_TOKENS];
-    uint8_t size;
-  } ptr;
+    uint8_t      size;
+  } args;
+
+#if USE_SHELL_HISTORY
+  struct {
+    /** History buffer */
+    struct {
+      char line[SHELL_MAX_LINE_SIZE];
+    } buffer[SHELL_HISTORY_BUFFER_SIZE];
+
+    /** Index into history. Used by UP/DOWN arrow key handlers */
+    ssize_t index;
+
+    /** Points to last command */
+    ssize_t head;
+  } history;
+#endif
 
 #if USE_SHELL_ENV
   /** Environment. Holds limited amount of variables */
+  // TODO: Use table_t
   struct {
     char name[SHELL_VAR_NAME_SIZE];
     char value[SHELL_VAR_VALUE_SIZE];
@@ -189,83 +219,157 @@ typedef struct shell_s {
 /**
  * Initializes shell
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  * @param file File used for IO
  * @param handler_ctx Context for commands handlers (user-defined)
  */
-error_t shell_init(
-    shell_t * ctx, vfs_file_t * file, void * handler_ctx);
+error_t shell_init(shell_t * sh, vfs_file_t * file, void * handler_ctx);
 
 /**
  * Starts shell
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  */
-error_t shell_start(shell_t * ctx);
+error_t shell_start(shell_t * sh);
 
 /**
  * Stops shell
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  */
-error_t shell_stop(shell_t * ctx);
+error_t shell_stop(shell_t * sh);
 
 /**
  * Return true if shell is running, false otherwise
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  */
-bool shell_is_running(shell_t * ctx);
+bool shell_is_running(shell_t * sh);
 
 /**
  * Runs shell command processor
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  */
-error_t shell_process(shell_t * ctx);
+error_t shell_process(shell_t * sh);
 
 /**
  * Parses and runs the command
  *
- * @param ctx Shell module context
+ * @param sh Shell module context
  * @param command Command
  */
-int8_t shell_execute(shell_t * ctx, const char * command);
+int8_t shell_execute(shell_t * sh, const char * command);
+
+#if USE_SHELL_HISTORY
+/**
+ * Reset shell history
+ *
+ * @param sh Shell context
+ */
+error_t shell_history_clear(shell_t * sh);
+
+/**
+ * Reset shell history index
+ *
+ * @note Should be called on each new command to reset history index
+ *
+ * @param sh Shell context
+ */
+error_t shell_history_reset(shell_t * sh);
+
+/**
+ * Appends a line (command) to history
+ *
+ * @note Will reject empty lines
+ *
+ * @param sh Shell context
+ * @param line Line (command) to append
+ */
+error_t shell_history_append(shell_t * sh, tty_line_t * line);
+
+/**
+ * Get history line from buffer at current history index
+ *
+ * @param sh Shell context
+ * @param line Line where to put a command from history
+ *
+ * @returns E_OK - if
+ */
+error_t shell_history_get(shell_t * sh, tty_line_t * line);
+
+/**
+ * Advance history buffer index
+ *
+ * @param sh Shell context
+ * @returns E_OK - if can advance.
+ */
+error_t shell_history_advance(shell_t * sh);
+
+/**
+ * Retard history buffer index
+ *
+ * @param sh Shell context
+ * @returns E_OK - if can retard.
+ */
+error_t shell_history_retard(shell_t * sh);
+
+/**
+ * Prepares shell_history_process_ansi_csi for parsing escape sequences
+ *
+ * Sets hidden global variable with shell context for
+ * shell_history_process_ansi_csi to use
+ *
+ * @param sh Shell context
+ */
+void shell_history_prepare_ansi_processor(shell_t * sh);
+
+/**
+ * Custom handler for ANSI CSI sequences that handles `ESC [ A` & `ESC [ B`
+ *
+ * @note Before calling tty_read_line* should call shell_history_prepare_ansi_processor
+ *
+ * @param tty TTY Context
+ * @param line TTY Line Context
+ * @param c Received Character
+ */
+error_t shell_history_process_ansi_csi(tty_t * tty, tty_line_t * line, char c);
+#endif
 
 #if USE_SHELL_ENV
 /**
  * Find value of a variable and place it in *value
  *
- * @param[in] ctx Shell module context
+ * @param[in] sh Shell module context
  * @param[in] name Variable name
  * @param[out] value Variable value
  */
-error_t shell_env_find(shell_t * ctx, const char * name, char ** value);
+error_t shell_env_find(shell_t * sh, const char * name, char ** value);
 
 /**
  * Set variable value (create new if not present)
  *
- * @param[in] ctx Shell module context
+ * @param[in] sh Shell module context
  * @param[in] name Variable name
  * @param[in] value Variable value
  */
-error_t shell_env_set(shell_t * ctx, const char * name, const char * value);
+error_t shell_env_set(shell_t * sh, const char * name, const char * value);
 
 /**
  * Remove variable
  *
- * @param[in] ctx Shell module context
+ * @param[in] sh Shell module context
  * @param[in] name Variable name
  */
-error_t shell_env_unset(shell_t * ctx, const char * name);
+error_t shell_env_unset(shell_t * sh, const char * name);
 
 /**
  * Parse argument - if begins with $ - return variable value, otherwise return arg
  *
- * @param[in] ctx Shell module context
+ * @param[in] sh Shell module context
  * @param[in] arg Value to parse
  */
-const char * shell_arg_parse(shell_t * ctx, const char * arg);
+const char * shell_arg_parse(shell_t * sh, const char * arg);
 #endif
 
 #ifdef __cplusplus
