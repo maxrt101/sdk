@@ -1,6 +1,6 @@
 /** ========================================================================= *
  *
- * @file sh_cmd.h
+ * @file shell_util.h
  * @date 27-08-2024
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *

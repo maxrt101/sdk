@@ -28,6 +28,7 @@ int8_t builtin_echo(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exec(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exit(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_help(shell_t * sh, uint8_t argc, const char ** argv);
+int8_t builtin_history(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_if(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_log(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_mem(shell_t * sh, uint8_t argc, const char ** argv);

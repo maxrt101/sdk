@@ -16,7 +16,7 @@
 #include "vfs/vfs.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG SHELL
+#define LOG_TAG shell
 
 #define SH_HEXDUMP_LINE 16
 

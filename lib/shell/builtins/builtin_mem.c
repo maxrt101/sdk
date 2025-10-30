@@ -17,7 +17,7 @@
 #include "os/alloc/alloc.h"
 
 /* Defines ================================================================== */
-#define LOG_TAG SHELL
+#define LOG_TAG shell
 
 /* Macros =================================================================== */
 #define SH_MEM_HEXDUMP_LINE 16
