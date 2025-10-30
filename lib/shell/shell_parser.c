@@ -31,23 +31,23 @@
  * Basically finds token borders and writes NULL between them, then stores
  * pointers to the start of each token into an array
  *
- * @param ctx Shell context
+ * @param sh Shell context
  */
-void shell_parse(shell_t * ctx) {
-  ctx->ptr.size = 0;
+void shell_parse(shell_t * sh) {
+  sh->args.size = 0;
 
   // Start of current token
-  char * start = ctx->line.buf;
+  char * start = sh->line.buf;
 
   // Flag to know if quoted token is being processed
   bool is_quoted = false;
 
   uint16_t i;
 
-  for (i = 0; i < ctx->line.size; ++i) {
-    char c = ctx->line.buf[i];
+  for (i = 0; i < sh->line.size; ++i) {
+    char c = sh->line.buf[i];
 
-    if (ctx->ptr.size >= SHELL_MAX_TOKENS) {
+    if (sh->args.size >= SHELL_MAX_TOKENS) {
       break;
     }
 
@@ -57,8 +57,8 @@ void shell_parse(shell_t * ctx) {
       // If previous token is empty, overwrite it
       // This is necessary, as multiple spaces are not skipped, and each one,
       // except for the last will create an empty token
-      if (ctx->ptr.size && ctx->ptr.buf[ctx->ptr.size-1][0] == '\0') {
-        ctx->ptr.size -= 1;
+      if (sh->args.size && sh->args.buf[sh->args.size-1][0] == '\0') {
+        sh->args.size -= 1;
       }
 
       // Update quoted flag
@@ -70,26 +70,26 @@ void shell_parse(shell_t * ctx) {
       is_quoted = is_quoted ? false : c == '"';
 
       // Save previous token to the array
-      ctx->ptr.buf[ctx->ptr.size++] = start;
+      sh->args.buf[sh->args.size++] = start;
 
       // Terminate previous token
-      ctx->line.buf[i] = '\0';
+      sh->line.buf[i] = '\0';
 
       // Set next token start
-      start = &ctx->line.buf[i+1];
+      start = &sh->line.buf[i+1];
     }
   }
 
   // Terminate last token, if it's present
-  if (ctx->line.buf[i-1]) {
-    ctx->ptr.buf[ctx->ptr.size++] = start;
-    ctx->line.buf[i] = '\0';
+  if (sh->line.buf[i-1]) {
+    sh->args.buf[sh->args.size++] = start;
+    sh->line.buf[i] = '\0';
   }
 
   // If last token is empty, overwrite it
   // See explanation above
-  if (ctx->ptr.size && ctx->ptr.buf[ctx->ptr.size-1][0] == '\0') {
-    ctx->ptr.size -= 1;
+  if (sh->args.size && sh->args.buf[sh->args.size-1][0] == '\0') {
+    sh->args.size -= 1;
   }
 
 #if SHELL_DEBUG_PRINT_TOKENS
