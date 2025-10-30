@@ -75,7 +75,7 @@ typedef enum {
 /**
  * DS28 Driver Init Mode
  *   DEFAULT uses OneWire search algorithm
- *   CHAIN uses DS28 chain detection algorithm
+ *   CHAIN uses DS28EA00 chain detection algorithm
  */
 typedef enum {
   DS28_INIT_MODE_DEFAULT = 0,
@@ -141,8 +141,7 @@ typedef struct {
  * @param[in] ctx Driver context
  * @param[in] ow Initialized OneWire driver context
  */
-error_t ds28_init(ds28_t * ctx, onewire_t * ow,
-                      ds28ae00_init_mode_t init_mode);
+error_t ds28_init(ds28_t * ctx, onewire_t * ow, ds28ae00_init_mode_t init_mode);
 
 /**
  * Deinitializes DS28 driver
@@ -159,8 +158,7 @@ error_t ds28_deinit(ds28_t * ctx);
  * @param[in/out] size Pointer to devices array size,
  *                     outputs number of found devices
  */
-error_t ds28_detect(ds28_t * ctx, ds28_device_t * devices,
-                        size_t * size);
+error_t ds28_detect(ds28_t * ctx, ds28_device_t * devices, size_t * size);
 
 /**
  * Detects sequence of DS28 devices
@@ -170,8 +168,7 @@ error_t ds28_detect(ds28_t * ctx, ds28_device_t * devices,
  * @param[in/out]  size Pointer to devices array size,
  *                      outputs number of found devices
  */
-error_t ds28_sequence_detect(ds28_t * ctx, ds28_device_t * devices,
-                                 size_t * size);
+error_t ds28_sequence_detect(ds28_t * ctx, ds28_device_t * devices, size_t * size);
 
 /**
  * Issues convert temp command to target device
@@ -190,8 +187,7 @@ error_t ds28_convert_temp(ds28_t * ctx, ds28_device_t * target);
  *                   to send to all devices)
  * @prarm[out] temp Result of temperature reading
  */
-error_t ds28_read_temp(ds28_t * ctx, ds28_device_t * target,
-                           ds28_temp_t * temp);
+error_t ds28_read_temp(ds28_t * ctx, ds28_device_t * target, ds28_temp_t * temp);
 
 /**
  * Reads power mode from target device
@@ -201,8 +197,7 @@ error_t ds28_read_temp(ds28_t * ctx, ds28_device_t * target,
  *                   to send to all devices)
  * @prarm[out] pwr Power mode (see @ref ds28_pwr_mode_t)
  */
-error_t ds28_read_power_mode(ds28_t * ctx, ds28_device_t * target,
-                                 ds28_pwr_mode_t * pwr);
+error_t ds28_read_power_mode(ds28_t * ctx, ds28_device_t * target, ds28_pwr_mode_t * pwr);
 
 /**
  * Sets temperature alarm
@@ -211,8 +206,7 @@ error_t ds28_read_power_mode(ds28_t * ctx, ds28_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp Alarm temperature value
  */
-error_t ds28_set_alarm(ds28_t * ctx, ds28_device_t * target,
-                           uint16_t alarm_temp);
+error_t ds28_set_alarm(ds28_t * ctx, ds28_device_t * target, uint16_t alarm_temp);
 
 /**
  * Sets temperature alarm LO byte
@@ -221,8 +215,7 @@ error_t ds28_set_alarm(ds28_t * ctx, ds28_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp_lo Alarm temperature LO byte value
  */
-error_t ds28_set_alarm_lo(ds28_t * ctx, ds28_device_t * target,
-                              uint8_t alarm_temp_lo);
+error_t ds28_set_alarm_lo(ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_lo);
 
 /**
  * Sets temperature alarm HI byte
@@ -231,8 +224,7 @@ error_t ds28_set_alarm_lo(ds28_t * ctx, ds28_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] alarm_temp_hi Alarm temperature HI byte value
  */
-error_t ds28_set_alarm_hi(ds28_t * ctx, ds28_device_t * target,
-                              uint8_t alarm_temp_hi);
+error_t ds28_set_alarm_hi(ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_hi);
 
 /**
  * Sets temperature resolution (@ref )
@@ -241,8 +233,7 @@ error_t ds28_set_alarm_hi(ds28_t * ctx, ds28_device_t * target,
  * @param[in] target Target to send command to
  * @prarm[in] resolution Temperature resolution
  */
-error_t ds28_set_resolution(ds28_t * ctx, ds28_device_t * target,
-                                ds28_resolution_t resolution);
+error_t ds28_set_resolution(ds28_t * ctx, ds28_device_t * target, ds28_resolution_t resolution);
 
 #ifdef __cplusplus
 }

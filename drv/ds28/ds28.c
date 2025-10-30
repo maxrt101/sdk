@@ -82,8 +82,7 @@ static error_t ds28_copy_scratchpad(
 }
 
 /* Shared functions ========================================================= */
-error_t ds28_init(
-    ds28_t * ctx, onewire_t * ow, ds28ae00_init_mode_t init_mode) {
+error_t ds28_init(ds28_t * ctx, onewire_t * ow, ds28ae00_init_mode_t init_mode) {
   ASSERT_RETURN(ctx && ow, E_NULL);
 
   ctx->ow = ow;
@@ -167,8 +166,7 @@ error_t ds28_detect(
   return E_OK;
 }
 
-error_t ds28_sequence_detect(
-    ds28_t * ctx, ds28_device_t * devices, size_t * size) {
+error_t ds28_sequence_detect(ds28_t * ctx, ds28_device_t * devices, size_t * size) {
   ASSERT_RETURN(ctx && devices, E_NULL);
 
   uint8_t on_payload[] = {
@@ -267,8 +265,7 @@ error_t ds28_convert_temp(ds28_t * ctx, ds28_device_t * target) {
       : onewire_broadcast(ctx->ow, DS28_CMD_CONVERT_TEMP);
 }
 
-error_t ds28_read_temp(
-    ds28_t * ctx, ds28_device_t * target, ds28_temp_t * temp) {
+error_t ds28_read_temp(ds28_t * ctx, ds28_device_t * target, ds28_temp_t * temp) {
   ASSERT_RETURN(ctx && temp, E_NULL);
 
   onewire_reset(ctx->ow);
@@ -297,8 +294,7 @@ error_t ds28_read_temp(
   return E_OK;
 }
 
-error_t ds28_read_power_mode(
-    ds28_t * ctx, ds28_device_t * target, ds28_pwr_mode_t * pwr) {
+error_t ds28_read_power_mode(ds28_t * ctx, ds28_device_t * target, ds28_pwr_mode_t * pwr) {
   ASSERT_RETURN(ctx && pwr, E_NULL);
 
   onewire_send(ctx->ow, &target->ow_dev, DS28_CMD_READ_PWR_MODE);
@@ -307,8 +303,7 @@ error_t ds28_read_power_mode(
   return E_OK;
 }
 
-error_t ds28_set_alarm(
-    ds28_t * ctx, ds28_device_t * target, uint16_t alarm_temp) {
+error_t ds28_set_alarm(ds28_t * ctx, ds28_device_t * target, uint16_t alarm_temp) {
   ASSERT_RETURN(ctx && target, E_NULL);
 
   target->scratchpad.temp_alarm.value = alarm_temp;
@@ -318,8 +313,7 @@ error_t ds28_set_alarm(
   return E_OK;
 }
 
-error_t ds28_set_alarm_lo(
-    ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_lo) {
+error_t ds28_set_alarm_lo(ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_lo) {
   ASSERT_RETURN(ctx && target, E_NULL);
 
   target->scratchpad.temp_alarm.lo = alarm_temp_lo;
@@ -329,8 +323,7 @@ error_t ds28_set_alarm_lo(
   return E_OK;
 }
 
-error_t ds28_set_alarm_hi(
-    ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_hi) {
+error_t ds28_set_alarm_hi(ds28_t * ctx, ds28_device_t * target, uint8_t alarm_temp_hi) {
   ASSERT_RETURN(ctx && target, E_NULL);
 
   target->scratchpad.temp_alarm.hi = alarm_temp_hi;
@@ -340,11 +333,7 @@ error_t ds28_set_alarm_hi(
   return E_OK;
 }
 
-error_t ds28_set_resolution(
-    ds28_t * ctx,
-    ds28_device_t * target,
-    ds28_resolution_t resolution
-) {
+error_t ds28_set_resolution(ds28_t * ctx, ds28_device_t * target, ds28_resolution_t resolution) {
   ASSERT_RETURN(ctx && target, E_NULL);
 
   target->scratchpad.config_register = resolution;
