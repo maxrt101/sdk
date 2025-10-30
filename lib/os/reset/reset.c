@@ -53,8 +53,8 @@ const char * os_reset_method_to_str(os_reset_method_t method) {
 const char * os_reset_reason_to_str(os_reset_reason_t reason) {
   switch (reason) {
     case OS_RESET_REASON_UNK:     return "UNK";
-    case OS_RESET_REASON_HW_RST:  return "HW_RST";
-    case OS_RESET_REASON_SW_RST:  return "SW_RST";
+    case OS_RESET_REASON_HW_RST:  return "HW";
+    case OS_RESET_REASON_SW_RST:  return "SW";
     case OS_RESET_REASON_WDG:     return "WDG";
     case OS_RESET_REASON_WWDG:    return "WWDG";
     case OS_RESET_REASON_POR:     return "POR";
