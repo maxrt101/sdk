@@ -69,6 +69,8 @@ int8_t builtin_ls(shell_t * sh, uint8_t argc, const char ** argv) {
     }
   }
 
+  vfs_close(folder);
+
   return SHELL_OK;
 }
 #endif
