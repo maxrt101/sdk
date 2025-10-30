@@ -23,6 +23,7 @@
 /* Variables ================================================================ */
 /* Private functions ======================================================== */
 /* Shared functions ========================================================= */
+#if USE_SHELL_HISTORY
 int8_t builtin_history(shell_t * sh, uint8_t argc, const char ** argv) {
   if (argc == 2 && !strcmp("clear", argv[1])) {
     shell_history_clear(sh);
@@ -50,3 +51,4 @@ int8_t builtin_history(shell_t * sh, uint8_t argc, const char ** argv) {
 
   return SHELL_OK;
 }
+#endif

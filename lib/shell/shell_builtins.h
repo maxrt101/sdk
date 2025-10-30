@@ -28,7 +28,6 @@ int8_t builtin_echo(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exec(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exit(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_help(shell_t * sh, uint8_t argc, const char ** argv);
-int8_t builtin_history(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_if(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_log(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_mem(shell_t * sh, uint8_t argc, const char ** argv);
@@ -40,6 +39,10 @@ int8_t builtin_sleep(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_task(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_time(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_tty(shell_t * sh, uint8_t argc, const char ** argv);
+
+#if USE_SHELL_HISTORY
+int8_t builtin_history(shell_t * sh, uint8_t argc, const char ** argv);
+#endif
 
 #if USE_GLOBAL_VFS
 int8_t builtin_cat(shell_t * sh, uint8_t argc, const char ** argv);
