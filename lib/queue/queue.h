@@ -35,9 +35,9 @@ extern "C" {
     queue_t name = {                                        \
         .elements = UTIL_CAT(name, _queue_buf),             \
         .capacity = cap,                                    \
-        .size = 0,                                          \
-        .head = 0,                                          \
-        .tail = 0                                           \
+        .size     = 0,                                      \
+        .head     = 0,                                      \
+        .tail     = 0                                       \
     }
 
 /* Enums ==================================================================== */
@@ -52,10 +52,10 @@ typedef void * queue_element_t;
  */
 typedef struct {
   queue_element_t * elements; /** Buffer for elements */
-  size_t capacity;            /** Capacity of buffer */
-  size_t size;                /** Size of queue */
-  size_t head;                /** Index of queue head */
-  size_t tail;                /** Index of queue tail */
+  size_t            capacity; /** Capacity of buffer */
+  size_t            size;     /** Size of queue */
+  size_t            head;     /** Index of queue head */
+  size_t            tail;     /** Index of queue tail */
 } queue_t;
 
 /* Variables ================================================================ */
@@ -68,7 +68,7 @@ typedef struct {
  *
  * @param q Queue handle
  * @param elements Queue buffer
- * @param size Buffer size
+ * @param capacity Buffer capacity (size)
  */
 error_t queue_init(queue_t * q, queue_element_t * elements, size_t capacity);
 
