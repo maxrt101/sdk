@@ -17,12 +17,10 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include "hal/spi/spi.h"
 #include "hal/gpio/gpio.h"
 #include "error/error.h"
 #include "time/timeout.h"
-#include "queue/queue.h"
 
 /* Defines ================================================================== */
 /**
@@ -44,7 +42,7 @@ typedef struct trx_cfg_s trx_cfg_t;
  */
 typedef struct {
   spi_t * spi;
-  gpio_t reset;
+  gpio_t  reset;
 } sx1278_trx_cfg_t;
 
 /**
@@ -52,9 +50,9 @@ typedef struct {
  */
 typedef struct {
   spi_t * spi;
-  gpio_t reset;
+  gpio_t  reset;
   uint8_t irq_flags;
-  int8_t last_rssi;
+  int8_t  last_rssi;
 } sx1278_trx_t;
 
 /* Variables ================================================================ */

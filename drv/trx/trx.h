@@ -17,14 +17,12 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include "hal/spi/spi.h"
-#include "hal/gpio/gpio.h"
 #include "error/error.h"
 #include "error/assertion.h"
 #include "time/timeout.h"
 
-#if HAS_TRX_RA02_SUPPORT
+#if HAS_TRX_SX1278_SUPPORT
 #include "drv/trx/sx1278/sx1278.h"
 #endif
 
@@ -56,7 +54,7 @@ typedef enum trx_ioctl_cmd_t {
  */
 typedef struct trx_cfg_s {
   union {
-#if HAS_TRX_RA02_SUPPORT
+#if HAS_TRX_SX1278_SUPPORT
     sx1278_trx_cfg_t ra02;
 #endif
   };
@@ -97,7 +95,7 @@ typedef struct trx_fn_s {
 struct trx_s {
   trx_fn_t fn;
   union {
-#if HAS_TRX_RA02_SUPPORT
+#if HAS_TRX_SX1278_SUPPORT
     sx1278_trx_t sx1278;
 #endif
   };
