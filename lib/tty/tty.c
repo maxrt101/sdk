@@ -153,7 +153,7 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
     line->size += 1;
 
     // Terminate the buffer
-    line->buf[line->size-1] = '\0';
+    line->buf[line->size] = '\0';
     return E_OK;
   }
 
@@ -210,45 +210,6 @@ error_t tty_reset(tty_t * tty) {
   return vfs_ioctl(tty->file, VFS_IOCTL_RESET_DEVICE);
 }
 
-error_t tty_line_reset(tty_line_t * line) {
-  ASSERT_RETURN(line, E_NULL);
-
-  line->size               = 0;
-  line->input.cursor       = 0;
-  line->input.state        = TTY_LINE_INPUT_STATE_DEFAULT;
-  line->input.custom_state = TTY_LINE_INPUT_CUSTOM_STATE_DEFAULT;
-
-  memset(line->buf, 0, sizeof(line->buf));
-
-  return E_OK;
-}
-
-error_t tty_line_from_str(tty_line_t * line, const char * str) {
-  ASSERT_RETURN(line && str, E_NULL);
-
-  line->input.state        = TTY_LINE_INPUT_STATE_DEFAULT;
-  line->input.custom_state = TTY_LINE_INPUT_CUSTOM_STATE_DEFAULT;
-  line->size               = strlen(str);
-  line->input.cursor       = line->size;
-
-  memcpy(line->buf, str, line->size + 1);
-
-  return E_OK;
-}
-
-error_t tty_line_from_buf(tty_line_t * line, const char * buf, size_t size) {
-  ASSERT_RETURN(line && buf, E_NULL);
-
-  line->input.state        = TTY_LINE_INPUT_STATE_DEFAULT;
-  line->input.custom_state = TTY_LINE_INPUT_CUSTOM_STATE_DEFAULT;
-  line->size               = size;
-  line->input.cursor       = size;
-
-  memcpy(line->buf, buf, size + 1);
-
-  return E_OK;
-}
-
 error_t tty_set_flag(tty_t * tty, tty_flag_t flag) {
   ASSERT_RETURN(tty, E_NULL);
 
@@ -300,7 +261,7 @@ error_t tty_read_line(tty_t * tty, tty_line_t * line) {
   }
 
   // Terminate the buffer
-  line->buf[line->size-1] = '\0';
+  line->buf[line->size] = '\0';
 
   return E_OK;
 }
@@ -321,7 +282,7 @@ error_t tty_read_line_async(tty_t * tty, tty_line_t * line) {
   }
 
   // Terminate the buffer
-  line->buf[line->size-1] = '\0';
+  line->buf[line->size] = '\0';
 
   return E_OK;
 }
@@ -364,19 +325,4 @@ error_t tty_bell(tty_t * tty) {
   }
 
   return E_OK;
-}
-
-__WEAK error_t tty_process_ansi_csi_custom(__UNUSED tty_t * tty, tty_line_t * line, __UNUSED char c) {
-  line->input.state = TTY_LINE_INPUT_STATE_DEFAULT;
-  return E_AGAIN;
-}
-
-__WEAK error_t tty_process_ansi_dcs_custom(__UNUSED tty_t * tty, tty_line_t * line, __UNUSED char c) {
-  line->input.state = TTY_LINE_INPUT_STATE_DEFAULT;
-  return E_AGAIN;
-}
-
-__WEAK error_t tty_process_ansi_osc_custom(__UNUSED tty_t * tty, tty_line_t * line, __UNUSED char c) {
-  line->input.state = TTY_LINE_INPUT_STATE_DEFAULT;
-  return E_AGAIN;
 }
