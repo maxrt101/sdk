@@ -13,6 +13,9 @@
 /* Defines ================================================================== */
 #define LOG_TAG hal_i2c
 
+#define I2C_VALID_ADDR_FIRST 3
+#define I2C_VALID_ADDR_LAST  0x77
+
 /* Macros =================================================================== */
 /* Exposed macros =========================================================== */
 /* Enums ==================================================================== */
@@ -23,14 +26,12 @@
 error_t i2c_detect(i2c_t * i2c, i2c_detect_result_t result) {
   ASSERT_RETURN(i2c && result, E_NULL);
 
-  for (uint8_t i = 0; i < 128; ++i) {
+  for (uint16_t i = I2C_VALID_ADDR_FIRST; i <= I2C_VALID_ADDR_LAST; ++i) {
     uint8_t data = 0;
 
-    // TODO: Send alone should work
-    //       Even better - should add an ability to select detection method
+    // TODO: Should add an ability to select detection method
     //       AUTO being the default. Look at i2cdetect.c mode
-    i2c_send(i2c, i, &data, 1);
-    error_t err = i2c_recv(i2c, i, &data, 1);
+    error_t err = i2c_send(i2c, i, &data, 1);
 
     if (err == E_OK) {
       result[i / 8] = UTIL_BIT_SET(result[i / 8], i % 8);
@@ -47,11 +48,16 @@ error_t i2c_detect_dump(const i2c_detect_result_t result) {
 
   log_printf("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\r\n");
 
-  for (uint8_t i = 0; i < 128; i += 16) {
+  for (uint16_t i = 0; i < 128; i += 16) {
     log_printf("%02x: ", i);
 
     for (uint8_t j = 0; j < 16; ++j) {
       uint8_t index = i + j;
+
+      if (index < I2C_VALID_ADDR_FIRST || index > I2C_VALID_ADDR_LAST) {
+        log_printf("   ");
+        continue;
+      }
 
       if (UTIL_BIT_GET(result[(index) / 8], (index) % 8)) {
         log_printf("%02x ", index);
