@@ -105,7 +105,7 @@ extern "C" {
  * to (__line, __col)
  */
 #define ANSI_CURSOR_MOVE(__line, __col) \
-  ("\x1b[" UTIL_STRINGIFY(__line) ";" UTIL_STRINGIFY(__col) "H")
+  "\x1b[" UTIL_STRINGIFY(__line) ";" UTIL_STRINGIFY(__col) "H"
 
 /**
  * Creates static string with ANSI escape sequence that will move cursor UP
@@ -113,7 +113,7 @@ extern "C" {
  * will move by 1 line
  */
 #define ANSI_CURSOR_MOVE_UP(...) \
-  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "A")
+  "\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "A"
 
 /**
  * Creates static string with ANSI escape sequence that will move cursor DOWN
@@ -121,7 +121,7 @@ extern "C" {
  * will move by 1 line
  */
 #define ANSI_CURSOR_MOVE_DOWN(...) \
-  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "B")
+  "\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "B"
 
 /**
  * Creates static string with ANSI escape sequence that will move cursor RIGHT
@@ -129,7 +129,7 @@ extern "C" {
  * will move by 1 column
  */
 #define ANSI_CURSOR_MOVE_RIGHT(...) \
-  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "C")
+  "\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "C"
 
 /**
  * Creates static string with ANSI escape sequence that will move cursor LEFT
@@ -137,7 +137,7 @@ extern "C" {
  * will move by 1 column
  */
 #define ANSI_CURSOR_MOVE_LEFT(...) \
-  ("\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "D")
+  "\x1b[" UTIL_IF_EMPTY(__VA_ARGS__, "", UTIL_STRINGIFY(__VA_ARGS__)) "D"
 
 /* Enums ==================================================================== */
 /* Types ==================================================================== */
