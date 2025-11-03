@@ -109,7 +109,6 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
         line->size         -= 1;
         line->input.cursor -= 1;
 
-
         // Reprint remainder of line (from cursor to the end) and move
         // cursor back to where it belongs
         if (tty_get_flag(tty, TTY_FLAG_ECHO_INPUT)) {
@@ -149,8 +148,6 @@ static error_t tty_process_char(tty_t * tty, tty_line_t * line, char c) {
       char buf[2] = {'\r', '\n'};
       vfs_write(tty->file, (uint8_t *) buf, 2);
     }
-
-    line->size += 1;
 
     // Terminate the buffer
     line->buf[line->size] = '\0';
@@ -235,13 +232,13 @@ bool tty_get_flag(tty_t * tty, tty_flag_t flag) {
 error_t tty_get_char(tty_t * tty, char * ch) {
   ASSERT_RETURN(tty && ch, E_NULL);
 
-  return vfs_read(tty->file, (uint8_t *) &ch, 1, VFS_READ_FLAG_NONE);
+  return vfs_read(tty->file, (uint8_t *) ch, 1, VFS_READ_FLAG_NONE);
 }
 
 error_t tty_get_char_async(tty_t * tty, char * ch) {
   ASSERT_RETURN(tty && ch, E_NULL);
 
-  return vfs_read(tty->file, (uint8_t *) &ch, 1, VFS_READ_FLAG_NOBLOCK);
+  return vfs_read(tty->file, (uint8_t *) ch, 1, VFS_READ_FLAG_NOBLOCK);
 }
 
 error_t tty_read_line(tty_t * tty, tty_line_t * line) {
