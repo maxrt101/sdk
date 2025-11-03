@@ -24,6 +24,7 @@ extern "C" {
 /* Variables ================================================================ */
 /* Shared functions ========================================================= */
 int8_t builtin_abort(shell_t * sh, uint8_t argc, const char ** argv);
+int8_t builtin_clear(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_echo(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exec(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_exit(shell_t * sh, uint8_t argc, const char ** argv);
