@@ -4,7 +4,7 @@
  * @date 31-10-2025
  * @author Maksym Tkachuk <max.r.tkachuk@gmail.com>
  *
- * @brief
+ * @brief MAX3010X Registers & Register Field Masks/Positions
  *
  *  ========================================================================= */
 #pragma once
