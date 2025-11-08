@@ -267,8 +267,8 @@ error_t trx_sx1278_init(trx_t * trx) {
 }
 
 error_t sx1278_init(trx_t * trx, trx_cfg_t * cfg) {
-  trx->sx1278.spi         = cfg->ra02.spi;
-  trx->sx1278.reset       = cfg->ra02.reset;
+  trx->sx1278.spi         = cfg->sx1278.spi;
+  trx->sx1278.reset       = cfg->sx1278.reset;
   trx->sx1278.irq_flags   = 0;
 
   sx1278_reset(trx);

@@ -55,7 +55,7 @@ typedef enum trx_ioctl_cmd_t {
 typedef struct trx_cfg_s {
   union {
 #if HAS_TRX_SX1278_SUPPORT
-    sx1278_trx_cfg_t ra02;
+    sx1278_trx_cfg_t sx1278;
 #endif
   };
 } trx_cfg_t;
