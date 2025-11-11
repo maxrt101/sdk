@@ -345,14 +345,11 @@ void os_schedule(void) {
 #endif
 
 #if OS_STAT_TRACE_TASK_STACK
-  if (os.cycles % OS_STAT_TRACE_TASK_STACK_CYCLES == 0) {
-    if (!CHECK_MAGIC(os.task.current->stack.last_sp)) {
-      // TODO: Maybe remove this loop by creating a variable on stack, and checking immediate value after it for stack magic
-      for (uint32_t * sp = os.task.current->stack.start; sp < (uint32_t *) os.task.current->stack.end; ++sp) {
-        if (*sp != OS_STACK_MAGIC) {
-          os.task.current->stack.last_sp = sp-1;
-          break;
-        }
+  if (os.task.current->cycles % OS_STAT_TRACE_TASK_STACK_CYCLES == 0) {
+    for (uint32_t * sp = os.task.current->stack.start; sp < (uint32_t *) os.task.current->stack.end; ++sp) {
+      if (*sp != OS_STACK_MAGIC) {
+        os.task.current->stack.last_sp = sp-1;
+        break;
       }
     }
   }

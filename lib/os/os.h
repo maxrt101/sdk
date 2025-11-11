@@ -114,7 +114,7 @@ extern "C" {
  * Period in cycles, how often check stack usage
  */
 #ifndef OS_STAT_TRACE_TASK_STACK_CYCLES
-#define OS_STAT_TRACE_TASK_STACK_CYCLES            10
+#define OS_STAT_TRACE_TASK_STACK_CYCLES            1000
 #endif
 
 /**
