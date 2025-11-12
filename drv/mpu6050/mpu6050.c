@@ -66,6 +66,7 @@ error_t mpu6050_init(mpu6050_t * mpu6050, mpu6050_cfg_t * cfg) {
 
   if (who_am_i != MPU6050_WHO_AM_I) {
     log_error("Invalid value for WHO_AM_I (%x != %x)", who_am_i, MPU6050_WHO_AM_I);
+    return E_INVAL;
   }
 
   log_info("Initializing MPU6050...");
