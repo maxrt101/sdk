@@ -12,7 +12,6 @@
 #include "shell/shell.h"
 #include "tty/tty.h"
 #include "log/log.h"
-#include "bsp.h"
 #include <string.h>
 
 /* Defines ================================================================== */

@@ -11,9 +11,9 @@
 /* Includes ================================================================= */
 #include "shell/shell.h"
 #include "shell/shell_util.h"
-#include "bsp.h"
 #include "log/log.h"
 #include "wdt/wdt.h"
+#include "error/assertion.h"
 #include <string.h>
 
 /* Defines ================================================================== */

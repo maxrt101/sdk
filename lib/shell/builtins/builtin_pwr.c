@@ -10,9 +10,9 @@
 
 /* Includes ================================================================= */
 #include "shell/shell.h"
-#include "bsp.h"
 #include "log/log.h"
 #include "os/power/power.h"
+#include "error/assertion.h"
 #include <string.h>
 
 /* Defines ================================================================== */
