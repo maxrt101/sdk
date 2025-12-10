@@ -110,17 +110,25 @@ void log_fmt(const char * file, int line, log_level_t level, const char * tag, c
   va_end(args);
 }
 
-void log_printf(const char * fmt, ...) {
-  char buf[LOG_LINE_SIZE];
-
+int log_printf(const char * fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  size_t size = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
+  int size = log_vprintf(fmt, args);
   va_end(args);
 
-  buf[size] = 0;
+  return size;
+}
+
+int log_vprintf(const char * fmt, va_list args) {
+  char buf[LOG_LINE_SIZE];
+
+  size_t size = vsnprintf(buf, sizeof(buf) - 1, fmt, args);
+
+  buf[size] = '\0';
 
   vfs_write(log_file, buf, size);
+
+  return (int) size;
 }
 
 void log_write_buffer(const uint8_t * buffer, size_t size) {

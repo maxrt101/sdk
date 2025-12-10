@@ -199,8 +199,18 @@ void log_fmt(const char * file, int line, log_level_t level, const char * tag, c
  *
  * @param[in] fmt Format (printf)
  * @param[in] ... Parameters
+ * @return Number of written characters
  */
-void log_printf(const char * fmt, ...);
+int log_printf(const char * fmt, ...);
+
+/**
+ * Print string without log formatting (calls log_print_port)
+ *
+ * @param[in] fmt Format (printf)
+ * @param[in] args Parameters
+ * @return Number of written characters
+ */
+int log_vprintf(const char * fmt, va_list args);
 
 /**
  * Writes formatted buffer to `out` (@ref log_init)
