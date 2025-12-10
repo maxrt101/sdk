@@ -37,7 +37,6 @@ int8_t builtin_repeat(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_reset(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_sh(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_sleep(shell_t * sh, uint8_t argc, const char ** argv);
-int8_t builtin_task(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_time(shell_t * sh, uint8_t argc, const char ** argv);
 int8_t builtin_tty(shell_t * sh, uint8_t argc, const char ** argv);
 
