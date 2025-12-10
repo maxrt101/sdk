@@ -128,6 +128,18 @@ extern "C" {
   vfs_table_container_t UTIL_CAT(__name, _vfs_table_pool_nodes)[__size] = {0};      \
   vfs_table_pool_t __name = {UTIL_CAT(__name, _vfs_table_pool_nodes), __size}
 
+/**
+ * Helper macro that acts as a context manager for opening a file
+ *
+ * Example:
+ *   VFS_WITH(vfs, file, "/folder/file.txt") {
+ *     vfs_read(file, buffer, 32, VFS_READ_FLAGS_NONE);
+ *   }
+ *
+ * @param __vfs  VFS instance pointer
+ * @param __name File handle variable name
+ * @param __path File path
+ */
 #define VFS_WITH(__vfs, __name, __path) \
   for (vfs_file_t * __name = vfs_open(__vfs, __path); __name; (vfs_close(__name), __name = NULL))
 
