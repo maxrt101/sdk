@@ -1,0 +1,15 @@
+module_declare(log
+    ${MOD_DIR}/include/*.h
+    ${MOD_DIR}/src/*.c
+)
+
+requires(util lds tty)
+
+features_declare(
+    LOG_DEBUG_COLOR=ANSI_COLOR_FG_CYAN
+    LOG_INFO_COLOR=ANSI_COLOR_FG_BLUE
+    LOG_WARNING_COLOR=ANSI_COLOR_FG_YELLOW
+    LOG_ERROR_COLOR=ANSI_COLOR_FG_RED
+    LOG_FATAL_COLOR=ANSI_COLOR_BG_RED
+    LOG_LEVEL_GLOBAL_MIN=LOG_DISABLED
+)
