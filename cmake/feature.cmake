@@ -1,3 +1,7 @@
+# feature.cmake - Overridable compile-time features
+#
+# readme TBD
+#
 
 set(DEFINED_FEATURES "")
 

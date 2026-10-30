@@ -1,3 +1,10 @@
+# scope.cmake - Implements global target stack
+#
+# Needed to infer the currently build target when it's needed
+# Some buildsystem APIs use this to inject scope when entering
+# a library/executable (module/project/target/platform) target,
+# for it's configuration to be able to link dependencies directly
+# to that target
 
 set(TARGET_SCOPE "")
 

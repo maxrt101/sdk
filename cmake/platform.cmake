@@ -1,11 +1,23 @@
+# platform.cmake - Target platforms
+#
+# A platform is a hardware(or not) platform, for which a target is built
+# A mechanism for platforms are heavily inspired by module.cmake
+# Platforms use the same mechanism as targets
+#
 
 set(PLATFORM_SEARCH_PATHS ${SDK_DIR}/platform)
 
+# Declare a platform - syntax is the same as module_declare/target_declare
+# For more info, see module_declare()
+#
 macro(platform_declare name)
     glob_files(platform_sources ${ARGN})
     add_library(platform_${name} ${platform_sources})
 endmacro()
 
+# Include a platform into current cmake target
+# For more info, see requires()
+#
 macro(platform_use name)
     cmake_parse_arguments(ARG "" "TARGET" "" ${ARGN})
 
@@ -46,6 +58,8 @@ macro(platform_use name)
     endif()
 endmacro()
 
+# Add a path to target search paths
+#
 macro(platform_add_search_path path)
     list(APPEND PLATFORM_SEARCH_PATHS ${path})
 endmacro()

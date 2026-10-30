@@ -1,4 +1,9 @@
+# utils.cmake - Various utility functions
 
+# Recursively globs files from provided paths
+# If path contains a "*" - it will be considered a glob expression,
+# otherwise - the path is just appended to the result
+#
 macro(glob_files res)
     set(${res} "")
 
@@ -16,6 +21,8 @@ macro(glob_files res)
     endforeach ()
 endmacro()
 
+# A little helper for applying VERBOSE feature (if defined) onto the CMake
+#
 macro(apply_verbose)
     if ("${FEATURE_VERBOSE}" STREQUAL "1")
         message(STATUS "${COLOR_MAGENTA}Verbose ON${COLOR_RESET}")

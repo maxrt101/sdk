@@ -1,11 +1,23 @@
+# target.cmake - Project targets
+#
+# A target is what the project is build for (host, specific board)
+# A mechanism for targets are heavily inspired by module.cmake
+# Targets use the same mechanism as platforms
+#
 
 set(TARGET_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/target)
 
+# Declare a target - syntax is the same as module_declare/platform_declare
+# For more info, see module_declare()
+#
 macro(target_declare name)
     glob_files(target_sources ${ARGN})
     add_library(target_${name} ${target_sources})
 endmacro()
 
+# Include a target into current cmake target
+# For more info, see requires()
+#
 macro(target_use name)
     cmake_parse_arguments(ARG "" "TARGET" "" ${ARGN})
 
@@ -13,7 +25,7 @@ macro(target_use name)
 
     foreach (path ${TARGET_SEARCH_PATHS})
         if (EXISTS "${path}/${name}/target.cmake")
-            set(PLATFORM_DIR "${path}/${name}")
+            set(TARGET_DIR "${path}/${name}")
 
             target_scope_enter(target_${name})
             include("${path}/${name}/target.cmake")
@@ -46,6 +58,8 @@ macro(target_use name)
     endif()
 endmacro()
 
+# Add a path to target search paths
+#
 macro(target_add_search_path path)
     list(APPEND TARGET_SEARCH_PATHS ${path})
 endmacro()

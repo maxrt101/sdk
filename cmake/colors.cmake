@@ -1,3 +1,4 @@
+# colors.cmake - Various colors using ANSI CSI sequences
 
 string(ASCII 27 ESC)
 set(COLOR_RESET     "${ESC}[m")
