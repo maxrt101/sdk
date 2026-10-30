@@ -34,8 +34,8 @@
  * @brief Used to "import" a logger, defined somewhere else
  */
 #define LOGGER_USE(__name) \
-  extern const logger_t UTIL_CAT(_name, _logger);                             \
-  static const logger_t * LOGGER_GLOBAL_PTR_NAME = &UTIL_CAT(_name, _logger)
+  extern const logger_t UTIL_CAT(__name, _logger);                            \
+  static const logger_t * LOGGER_GLOBAL_PTR_NAME = &UTIL_CAT(__name, _logger)
 
 /**
  * @brief Helper to call the backend printf function with __VA_ARGS__ counted
