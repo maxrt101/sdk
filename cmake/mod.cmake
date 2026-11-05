@@ -11,7 +11,7 @@
 # For more info look at loader module
 #
 
-macro(mod_declare type name)
+macro(mod_declare name type)
     glob_files(sources ${ARGN})
 
     add_library(${name} MODULE ${sources})
